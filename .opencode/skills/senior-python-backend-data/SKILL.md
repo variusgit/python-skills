@@ -1,0 +1,165 @@
+---
+name: senior-python-backend-data
+description: Ship and review production Python backend + data workflow changes (APIs, PostgreSQL, Airflow, Spark/S3) with senior-level correctness, testing, and operability. Use for backend features/refactors, API contract changes, schema migrations, Airflow DAGs/backfills, data jobs/storage layouts, or production incident triage.
+compatibility: opencode
+metadata:
+  audience: "senior"
+  language: "python"
+  domains: "backend,data-engineering,orchestration,testing"
+  primary_tools: "airflow,pytest,sql"
+---
+
+# Senior Python Backend/Data (Production Delivery Skill)
+
+This is a **task skill**: a reusable set of instructions that tells an agent *how to execute* senior-level Python backend/data work in a production ecosystem.
+
+## What this skill does
+
+- Designs and implements production-grade Python backend and data systems (services, batch jobs, pipelines).
+- Enforces architecture boundaries (domain logic vs I/O vs orchestration) to keep code testable and maintainable.
+- Builds and operates Airflow workflows (DAG semantics, retries/timeouts, safe backfills, operational controls).
+- Evolves persistence safely (constraints, transactions, expand/contract migrations).
+- Applies senior-grade testing discipline (risk-based pyramid, deterministic tests, CI gates).
+- Hardens for production (observability, security/PII, performance and reliability hygiene).
+
+## When to use this skill
+
+Use this skill when the task involves any of the following:
+
+- Writing/refactoring **Python backend** code that runs in production (APIs, workers, scheduled jobs)
+- Designing or changing **API contracts** (payloads, errors, pagination, idempotency semantics)
+- **Database** schema/query work (PostgreSQL), migrations, backfills, data integrity concerns
+- Authoring/reviewing **Airflow DAGs**, tasks, sensors, schedules, or backfill/reprocessing plans
+- Building/refactoring **data jobs** (e.g., PySpark) and **storage layouts** (S3/Parquet partitions)
+- Building/improving **tests** (pytest, integration/contract tests), fixing flaky tests, defining CI gates
+- Troubleshooting **production incidents** in backend/data workloads (timeouts, retries, data gaps, bad backfills)
+
+Do not use this skill for front-end-only changes or generic brainstorming unrelated to production backend/data delivery.
+
+## Fixed foundations (given stack constraints)
+
+Assume these are in place and prefer integrating with them rather than replacing them:
+
+- Python 3.10+
+- Apache Airflow 2.10+
+- PostgreSQL (primary relational DB)
+- Greenplum **or** ClickHouse (MPP/analytics)
+- PySpark 3.3+ (large-scale data processing)
+- S3-compatible object storage (canonical object/OLAP layer)
+
+If you propose additional tools (FastAPI, SQLAlchemy, Redis, Kafka, etc.), treat them as **add-ons** and explain integration and operational impact.
+
+## Scope of responsibility (what you own per task)
+
+For any change you implement or review, you own:
+
+- Correctness of business rules in the code you touch
+- Explicit contracts at boundaries (HTTP, DB, queues, storage)
+- Safe persistence evolution (schemas, migrations, backfills when needed)
+- Airflow DAG/task correctness with idempotency and backfill safety
+- Tests appropriate to risk (unit/integration/contract)
+- Production operability for shipped behavior (logs/metrics, runbook notes for critical flows)
+
+You must surface:
+- invariants affected by the change
+- key trade-offs (latency/cost/complexity/operability)
+- validation plan (tests + runtime signals)
+
+## Operating principles (senior bar)
+
+- **Correctness over convenience**: assume retries, duplicates, partial failures, concurrency, and race conditions.
+- **Explicit contracts**: APIs, schemas, events are contracts; default to backward compatibility.
+- **Invariants are first-class**: state them explicitly; enforce them in code + storage; test them.
+- **Idempotency by default** for retryable/replayable operations (API writes, consumers, Airflow tasks, backfills).
+- **Operability is part of done**: actionable logs/metrics, bounded retries/timeouts, safe re-run paths.
+- **Incremental delivery**: small reversible changes; expand/contract migrations; feature flags when appropriate.
+
+## How to work (agent workflow)
+
+1. **Classify the task**
+   - API / DB & migrations / Airflow / data job & storage / messaging async / testing / production readiness
+2. **Identify invariants and risks**
+   - data loss/corruption, downtime, backfill blast radius, security/PII, cost/performance regression
+3. **Load only the relevant reference docs** (see “Reference routing”)
+4. Produce an **implementation-grounded plan**
+   - concrete steps, failure modes, validation, rollback/backout
+   - ask only minimal clarifying questions needed to proceed safely
+5. Implement with the “Definition of done” checklist below
+6. Close the loop
+   - tests updated, migration/backfill steps documented, mini-ADR for non-trivial decisions
+
+## Output contract (default response shape)
+
+When responding, prefer this structure (omit irrelevant sections):
+
+- **Assumptions & constraints**
+- **Plan**
+- **Implementation details** (code-level notes and key decisions)
+- **Tests** (what to add/run and why)
+- **Rollout / migration / backfill safety**
+- **Observability & ops notes**
+- **Risks & mitigations**
+
+## Definition of done (must satisfy)
+
+- **Correctness**: invariants enforced; idempotent semantics where needed; explicit failure modes.
+- **Maintainability**: clear module boundaries; readable naming; minimal “magic”.
+- **Testability**: domain logic unit-tested; integration risks covered; tests deterministic.
+- **Observability**: structured logs; actionable errors; key metrics where meaningful.
+- **Security**: secrets/PII protected; least privilege; safe input handling.
+- **Operations**: timeouts/retries configured; backfill safety controls; runbook notes for critical flows.
+
+## Mini-ADR trigger (decision record)
+
+Create a mini-ADR when any of these are true:
+- new external dependency or integration
+- schema migration with rollback considerations
+- idempotency/replay/backfill semantics are changed
+- significant performance/cost trade-off
+- compatibility policy changes for APIs/events
+
+Use:
+- @.opencode/skills/senior-python-backend-data/references/mini-adr.md
+
+## Reference routing (progressive disclosure)
+
+This skill stays high-level on purpose. Load deep technical detail **only when relevant**.
+
+### Always (core Python engineering rules)
+- @.opencode/skills/senior-python-backend-data/references/python-best-practices.md
+
+### Airflow DAG authoring / schedules / backfills / sensors
+- @.opencode/skills/senior-python-backend-data/references/airflow-dag-patterns.md
+
+### Testing strategy (pytest, integration, Airflow DAG tests, CI gates)
+- @.opencode/skills/senior-python-backend-data/references/python-testing.md
+
+### PostgreSQL persistence (constraints, transactions, migrations, query hygiene)
+- @.opencode/skills/senior-python-backend-data/references/persistence-postgresql.md
+
+### API design (contracts, errors, idempotency keys, pagination, compatibility)
+- @.opencode/skills/senior-python-backend-data/references/api-design.md
+
+### Data jobs & storage (S3 layout, Parquet partitions, incremental loads, PySpark hygiene)
+- @.opencode/skills/senior-python-backend-data/references/data-jobs-and-storage.md
+
+### Messaging / async processing (at-least-once, dedup, outbox, DLQ)
+- @.opencode/skills/senior-python-backend-data/references/messaging-async-processing.md
+
+### MPP / analytics (Greenplum or ClickHouse)
+- @.opencode/skills/senior-python-backend-data/references/analytics-mpp.md
+
+### Production readiness (logging, metrics, retries/timeouts, incident playbooks, security)
+- @.opencode/skills/senior-python-backend-data/references/production-readiness.md
+
+**Conflict rule:** treat references as source of truth. If two references conflict, prefer the most task-specific doc; otherwise prefer `python-best-practices.md`. If the conflict impacts correctness/safety, call it out and choose the safer default.
+
+## Anti-patterns (avoid)
+
+- Business logic embedded in HTTP handlers or Airflow DAG files (especially at import/parse time).
+- Bare `except`, swallowed failures, or “log and continue” that violates invariants.
+- Non-idempotent tasks/handlers paired with retries (creates duplicates/corruption).
+- Big-bang migrations without expand/contract and without a rollback plan.
+- Unbounded list endpoints or unbounded DB queries in production paths.
+- Backfills without throttling, isolation, and validation.
+- Logging secrets/PII or leaking internal stack traces to clients.
