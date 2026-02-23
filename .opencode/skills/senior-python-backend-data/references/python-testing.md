@@ -2,6 +2,13 @@
 
 This document defines practical, senior-level testing standards for production Python backend and data work.
 
+## When to use
+
+- Writing or refactoring backend/data Python code that changes behavior.
+- Adding or changing API, DB, Airflow, or pipeline contracts.
+- Stabilizing flaky tests or redesigning CI quality gates.
+- Reviewing risky changes where correctness depends on invariants.
+
 ## Goals
 
 - **Catch invariant violations early** (unit tests for domain logic + constraints).
@@ -142,7 +149,15 @@ Additionally run (depending on repo):
 - DAG parse tests (always for DAG repos)
 - contract checks for public APIs/events
 
-## Common failure patterns and what to do
+## Checklist
+
+- Unit tests cover core invariants and idempotency paths.
+- Integration tests cover DB/transaction/migration risks where applicable.
+- Contract tests protect API/event compatibility when boundaries change.
+- DAG parse/structure tests are present for Airflow repositories.
+- CI gates run lint, type-check, and deterministic pytest suites.
+
+## Failure modes
 
 - **Flaky tests**: isolate time/network; remove sleeps; control randomness.
 - **Slow tests**: split integration from unit; cache heavy fixtures; shrink datasets.

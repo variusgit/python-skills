@@ -2,6 +2,13 @@
 
 This document defines PostgreSQL practices for correctness, data integrity, and safe evolution.
 
+## When to use
+
+- Designing/changing PostgreSQL schemas and constraints.
+- Implementing transactional write paths and concurrency control.
+- Planning/authoring migrations, backfills, and rollback strategies.
+- Reviewing query performance and integrity risks in production flows.
+
 ## Schema design (encode invariants)
 
 - Use constraints to enforce invariants:
@@ -66,10 +73,18 @@ Backfills must be:
 - observable (progress metrics/logs)
 - safe to resume (checkpointing or idempotent partition strategy)
 
-## Practical checklist (per DB change)
+## Checklist
 
 - Which invariants are affected?
 - Are they enforced in constraints and tested?
 - What is the rollback plan?
 - What queries are impacted and are they indexed?
 - Are timeouts and connection pool settings appropriate?
+
+## Failure modes
+
+- Big-bang migrations without expand/contract and rollback clarity.
+- Retry-enabled non-idempotent writes causing duplicate/corrupt state.
+- Long transactions across network calls increasing lock contention.
+- Missing/incorrect indexes on hot paths causing latency regressions.
+- Backfills without bounds/throttling saturating primary workloads.

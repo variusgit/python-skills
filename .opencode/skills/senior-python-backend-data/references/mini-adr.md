@@ -2,6 +2,15 @@
 
 Write a mini-ADR when a change is non-trivial: schema strategy, consistency model, idempotency approach, backfill plan, major performance/cost tradeoff, new dependency.
 
+## When to use
+
+- Architecture or dependency choices with meaningful trade-offs.
+- Schema/idempotency/backfill semantics that affect correctness.
+- Performance/cost/operability decisions with long-lived impact.
+- Compatibility-policy changes for APIs/events.
+
+Read `python-best-practices.md` first, then use this template to record non-trivial decisions.
+
 ## Template
 
 - **Context**
@@ -20,3 +29,19 @@ Write a mini-ADR when a change is non-trivial: schema strategy, consistency mode
   - runtime signals (logs/metrics) that prove it works
 - **Rollout/Backout**
   - migration plan, feature flags, rollback steps
+
+## Checklist
+
+- Context and constraints are explicit and testable.
+- Decision is concrete and scoped to current problem.
+- Alternatives and trade-offs are realistic, not strawman options.
+- Validation and runtime signals are defined.
+- Rollout and backout are operationally executable.
+
+## Failure modes
+
+- ADR states conclusions without concrete constraints/evidence.
+- Missing rollout/backout creates release-time ambiguity.
+- Trade-offs omit correctness or operability implications.
+- Validation is vague and not measurable at runtime.
+- Decision scope drifts beyond the actual change.

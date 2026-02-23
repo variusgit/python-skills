@@ -2,6 +2,13 @@
 
 This document defines stable API contract practices for production systems.
 
+## When to use
+
+- Designing or changing HTTP/RPC request/response contracts.
+- Evolving error models, pagination, or compatibility policy.
+- Implementing retry-safe write endpoints and idempotency semantics.
+- Reviewing API changes for production rollout safety.
+
 ## Contracts (request/response)
 
 - Validate inputs early; reject invalid data with clear errors.
@@ -55,10 +62,18 @@ For endpoints that create/charge/trigger:
   - latency and status
 - Emit metrics for rate/latency/error classes.
 
-## Practical checklist (per API change)
+## Checklist
 
 - What is the contract (input/output/error model)?
 - Is it backward compatible?
 - Is the write path idempotent?
 - Are pagination and limits safe?
 - Are logs/metrics sufficient to debug issues?
+
+## Failure modes
+
+- Breaking contract changes without explicit versioning.
+- Retry-unsafe writes creating duplicate side effects.
+- Leaking internal exception details or stack traces to clients.
+- Unbounded list endpoints causing latency and resource spikes.
+- Inconsistent error shapes that break clients and observability.

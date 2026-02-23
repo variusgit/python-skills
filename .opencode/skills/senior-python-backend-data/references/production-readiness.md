@@ -2,6 +2,15 @@
 
 This document defines baseline production hardening for backend/data workloads.
 
+## When to use
+
+- Preparing backend/data changes for production rollout.
+- Defining observability and operational controls for critical paths.
+- Hardening retry/timeout/concurrency strategy.
+- Writing incident/runbook guidance and readiness checks.
+
+Read `python-best-practices.md` first, then apply this document for production hardening and operations.
+
 ## Logging
 
 - Prefer structured logs with stable fields.
@@ -54,3 +63,19 @@ For critical flows, document:
 - Avoid unbounded DB queries and unbounded list endpoints.
 - Use indexes and query plans; monitor slow queries.
 - Manage connection pools and avoid saturation.
+
+## Checklist
+
+- Structured logs include stable identifiers without secrets/PII.
+- Service and pipeline metrics cover rate/latency/errors/freshness.
+- Network calls have timeouts and bounded retry/backoff strategy.
+- Concurrency controls exist for expensive endpoints and jobs.
+- Critical path runbook covers rerun/backfill and verification steps.
+
+## Failure modes
+
+- Insufficient telemetry makes incidents hard to triage.
+- Retry storms from unbounded retries without circuit protection.
+- Secrets/PII leakage via logs or misconfigured access.
+- Resource saturation from missing limits on jobs/endpoints.
+- Slow-query and pool exhaustion issues without alerting signals.

@@ -16,7 +16,7 @@ Clarifications to avoid common contradictions:
 
 Production-ready patterns for Apache Airflow including DAG design, operators, sensors, testing, and deployment strategies.
 
-## When to Use This Skill
+## When to use
 
 - Creating data pipeline orchestration with Airflow
 - Designing DAG structures and dependencies
@@ -24,6 +24,8 @@ Production-ready patterns for Apache Airflow including DAG design, operators, se
 - Testing Airflow DAGs locally
 - Setting up Airflow in production
 - Debugging failed DAG runs
+
+Read `python-best-practices.md` first, then use this document for Airflow-specific constraints.
 
 ## Core Concepts
 
@@ -423,6 +425,22 @@ airflow/
 - **Don't use global state** - Tasks should be stateless
 - **Don't skip catchup blindly** - Understand implications
 - **Don't put heavy logic in DAG file** - Import from modules
+
+## Checklist
+
+- DAG import/parse passes with zero import errors.
+- DAG files are declarative and avoid import-time I/O.
+- Retries/timeouts are bounded and idempotency-safe.
+- Pools/queues/concurrency limits are set for expensive tasks.
+- Backfill strategy is bounded, throttled, and observable.
+
+## Failure modes
+
+- Import-time network/DB/S3 calls causing broken DAG parsing.
+- Accidental catchup/backfill creating runaway load.
+- Non-idempotent tasks paired with retries creating duplicates.
+- Sensors without resource controls starving workers.
+- Unbounded mapped tasks or fan-out causing scheduler pressure.
 
 ## Resources
 

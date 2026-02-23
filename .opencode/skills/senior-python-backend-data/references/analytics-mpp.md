@@ -10,6 +10,8 @@ Use Greenplum/ClickHouse for:
 - reporting datasets
 Avoid using it as the source of truth for transactional workflows; use PostgreSQL for that.
 
+Read `python-best-practices.md` first, then use this document for analytics-store engine decisions.
+
 ## Ingestion patterns
 
 - Prefer **append + dedup** or **partition overwrite** strategies depending on the engine.
@@ -37,9 +39,17 @@ Avoid using it as the source of truth for transactional workflows; use PostgreSQ
 - Maintain freshness metrics and completeness checks.
 - Document canonical datasets and ownership.
 
-## Practical checklist
+## Checklist
 
 - Is the load idempotent?
 - Do keys/partitioning align with query patterns?
 - Are there freshness/completeness signals?
 - Is the dataset contract documented?
+
+## Failure modes
+
+- Treating MPP store as transactional source of truth.
+- Poor partition/distribution keys causing skew and heavy shuffles.
+- Non-idempotent ingestion producing duplicates on retries.
+- Missing freshness/completeness checks hiding stale/broken datasets.
+- Engine defaults chosen without query-pattern validation.

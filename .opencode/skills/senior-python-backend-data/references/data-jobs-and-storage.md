@@ -2,6 +2,15 @@
 
 This document defines practices for batch data jobs and object storage layouts that support reprocessing and correctness.
 
+## When to use
+
+- Designing or refactoring batch jobs and storage layouts.
+- Defining partitioning, watermark, dedup, or replay strategy.
+- Planning incremental loads and large backfills.
+- Reviewing PySpark/Python data jobs for correctness and cost.
+
+Read `python-best-practices.md` first, then apply this document for data-job and storage-specific decisions.
+
 ## Core principles
 
 - Prefer **replayable, append-only** storage where feasible.
@@ -54,10 +63,18 @@ This document defines practices for batch data jobs and object storage layouts t
 - Avoid scanning entire datasets for incremental work; use partitions and manifests.
 - Prefer columnar formats (Parquet) and predicate pushdown-friendly schemas.
 
-## Practical checklist (per job)
+## Checklist
 
 - Is it deterministic and idempotent?
 - What is the replay source of truth?
 - What are partition keys and why?
 - How are late records handled?
 - What validations catch silent corruption?
+
+## Failure modes
+
+- Non-deterministic transforms causing non-reproducible outputs.
+- Partition strategy creating too many tiny files and high cost.
+- Backfills without throttling/resume strategy causing instability.
+- Missing schema/data validations allowing silent corruption.
+- Incremental logic scanning full datasets due to weak partition pruning.

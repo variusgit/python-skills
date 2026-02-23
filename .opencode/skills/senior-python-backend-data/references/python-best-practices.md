@@ -14,7 +14,7 @@ Applies to:
 
 Idiomatic Python patterns and best practices for building robust, efficient, and maintainable applications.
 
-## When to Activate
+## When to use
 
 - Writing new Python code
 - Reviewing Python code
@@ -289,6 +289,22 @@ from mypackage.utils import format_name
 ## 17. Final Principle
 Readable, typed, testable, and explicit code is more valuable than clever code.
 Production Python should be predictable, observable, and easy to maintain.
+
+## Checklist
+
+- Typing is explicit for public APIs and non-trivial internals.
+- Lint/format/type-check/test commands follow repo standards.
+- Business logic is separated from I/O and orchestration.
+- External calls are timeout-bounded, retry-safe, and observable.
+- Secrets/PII are not present in code, logs, or committed artifacts.
+
+## Failure modes
+
+- Hidden import-time side effects causing startup/runtime instability.
+- Bare `except` or swallowed errors masking data loss/corruption.
+- Unbounded memory/query patterns causing production saturation.
+- Repo toolchain drift (manual manifest edits, mixed format/lint workflows).
+- Weak typing in boundary code causing contract drift at runtime.
 
 ---
 

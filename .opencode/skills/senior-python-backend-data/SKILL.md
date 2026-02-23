@@ -125,8 +125,10 @@ Use:
 
 This skill stays high-level on purpose. Load deep technical detail **only when relevant**.
 
-### Always (core Python engineering rules)
+### Mandatory first read (always)
 - @.opencode/skills/senior-python-backend-data/references/python-best-practices.md
+
+Read `python-best-practices.md` first for every backend/data task. Then load only the most relevant task-specific reference(s).
 
 ### Airflow DAG authoring / schedules / backfills / sensors
 - @.opencode/skills/senior-python-backend-data/references/airflow-dag-patterns.md
