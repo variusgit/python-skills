@@ -1,3 +1,8 @@
+---
+name: mini-adr
+description: Lightweight decision record template for non-trivial changes — context, decision, alternatives, trade-offs, consequences, validation, and rollout/backout plan. Use when a change involves schema strategy, consistency model, new dependency, backfill plan, or significant performance/cost trade-off.
+---
+
 # Mini-ADR (Decision Record Template)
 
 Write a mini-ADR when a change is non-trivial: schema strategy, consistency model, idempotency approach, backfill plan, major performance/cost tradeoff, new dependency.

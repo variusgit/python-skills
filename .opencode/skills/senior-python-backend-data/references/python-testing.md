@@ -1,3 +1,8 @@
+---
+name: python-testing
+description: Senior-level testing standards for production Python backend and data work — test pyramid, determinism rules, pytest patterns, Airflow DAG tests, data pipeline validation, and CI quality gates. Use when writing, reviewing, or stabilizing tests for backend/data code.
+---
+
 # Python Testing Playbook (Backend + Data + Airflow)
 
 This document defines practical, senior-level testing standards for production Python backend and data work.

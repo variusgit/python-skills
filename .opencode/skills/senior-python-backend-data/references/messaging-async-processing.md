@@ -1,4 +1,9 @@
-# Messaging & Async Processing (If Present)
+---
+name: messaging-async-processing
+description: Async messaging practices for at-least-once delivery — consumer idempotency, retry/DLQ strategies, command vs event semantics, outbox pattern, and ordering guarantees. Use when implementing or reviewing async consumers, producers, or event-driven flows.
+---
+
+# Messaging & Async Processing
 
 Assume **at-least-once delivery** unless proven otherwise.
 

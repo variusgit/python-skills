@@ -1,3 +1,8 @@
+---
+name: production-readiness
+description: Baseline production hardening for backend/data workloads — structured logging, metrics, timeouts/retries/backoff, operational controls, runbook notes, security, and performance hygiene. Use when preparing changes for production rollout or hardening existing systems.
+---
+
 # Production Readiness (Observability, Reliability, Security)
 
 This document defines baseline production hardening for backend/data workloads.

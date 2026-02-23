@@ -1,3 +1,8 @@
+---
+name: persistence-postgresql
+description: PostgreSQL practices for schema design, constraint enforcement, transactions, concurrency, idempotent writes, query hygiene, expand/contract migrations, and backfill safety. Use when designing or changing schemas, writing migrations, or reviewing query/transaction correctness.
+---
+
 # PostgreSQL Persistence (Schema, Queries, Migrations)
 
 This document defines PostgreSQL practices for correctness, data integrity, and safe evolution.

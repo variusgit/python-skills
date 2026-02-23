@@ -1,3 +1,8 @@
+---
+name: analytics-mpp
+description: Guidance for MPP analytics stores (Greenplum, ClickHouse) — when to use, idempotent ingestion, schema/partitioning/distribution design, and data quality checks. Use when building or reviewing ingestion into or queries against the analytics layer.
+---
+
 # Analytics Store (Greenplum or ClickHouse)
 
 This document provides minimal guidance for data-adjacent backend work that touches an MPP analytics store.

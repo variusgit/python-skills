@@ -1,3 +1,8 @@
+---
+name: data-jobs-and-storage
+description: Practices for batch data jobs and object storage layouts — S3 partitioning, Parquet write strategies, PySpark hygiene, incremental loads, backfill safety, and output validation. Use when building, refactoring, or reviewing data jobs and storage designs.
+---
+
 # Data Jobs & Storage (S3/Parquet, PySpark Hygiene)
 
 This document defines practices for batch data jobs and object storage layouts that support reprocessing and correctness.

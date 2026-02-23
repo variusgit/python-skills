@@ -1,3 +1,8 @@
+---
+name: api-design
+description: Stable API contract practices for production systems — request/response contracts, backward compatibility, idempotent writes, error models, pagination, timeouts, and observability. Use when designing, changing, or reviewing HTTP/RPC API contracts.
+---
+
 # API Design (HTTP/RPC) for Backend/Data Systems
 
 This document defines stable API contract practices for production systems.
