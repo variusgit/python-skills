@@ -157,11 +157,39 @@ def test_expected_dags_present(dagbag):
 
 #### 2) DAG structure tests
 
-Validate: schedule/dataset triggers, default_args (retries/timeouts), task IDs, dependencies, pools/queues for expensive tasks.
+Validate: schedule/dataset triggers, default_args (retries/timeouts), task IDs, dependencies, pools/queues for expensive tasks, and graph integrity.
+
+```python
+def test_dag_structure(dagbag):
+    dag = dagbag.get_dag("etl_customers")
+    assert dag is not None
+    assert dag.schedule_interval == "0 6 * * *"
+    assert dag.default_args.get("retries", 0) >= 1
+    assert {"extract", "transform", "load"}.issubset({t.task_id for t in dag.tasks})
+
+def test_task_dependencies(dagbag):
+    dag = dagbag.get_dag("etl_customers")
+    extract = dag.get_task("extract")
+    assert "transform" in [t.task_id for t in extract.downstream_list]
+
+def test_no_dag_cycles(dagbag):
+    for dag_id, dag in dagbag.dags.items():
+        assert dag.test_cycle() is None, f"Cycle detected in {dag_id}"
+```
 
 #### 3) Task/business logic tests
 
 Keep business logic **out of DAG files** — put it in importable modules under `src/`, unit test it separately, and in DAG tests only validate wiring and config.
+
+```python
+from mypackage.etl.customers import transform_customers
+
+def test_transform_customers_drops_nulls():
+    raw = [{"id": 1, "name": "Alice"}, {"id": 2, "name": None}]
+    result = transform_customers(raw)
+    assert len(result) == 1
+    assert result[0]["name"] == "Alice"
+```
 
 #### 4) Operator/Sensor tests (as needed)
 

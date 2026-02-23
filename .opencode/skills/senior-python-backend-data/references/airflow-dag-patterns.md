@@ -1,6 +1,6 @@
 ---
 name: airflow-dag-patterns
-description: Build production Apache Airflow DAGs with best practices for operators, sensors, testing, and deployment. Use when creating data pipelines, orchestrating workflows, or scheduling batch jobs.
+description: Build production Apache Airflow DAGs with best practices for operators, sensors, and deployment. Use when creating data pipelines, orchestrating workflows, or scheduling batch jobs.
 ---
 
 # Apache Airflow DAG Patterns
@@ -10,18 +10,16 @@ This guide applies to **Apache Airflow DAG code**: DAG definitions, task wiring,
 
 Clarifications to avoid common contradictions:
 - **DAG files are orchestration glue**: keep them thin; move heavy logic into importable modules to keep parsing fast and enable unit testing.
-- **Testing strategy**: prioritize structural/import tests (e.g., DAG loads, no cycles, expected task graph). Unit tests belong to the business-logic modules invoked by tasks.
 - **Dependencies**: follow the repo's established dependency workflow (often requirements/constraints in Airflow stacks). Do not introduce a new package manager unless the project explicitly migrates.
 - **Python version**: DAG code must be compatible with the Airflow runtime’s supported Python version. Avoid language features not supported by that runtime.
 
-Production-ready patterns for Apache Airflow including DAG design, operators, sensors, testing, and deployment strategies.
+Production-ready patterns for Apache Airflow including DAG design, operators, sensors, and deployment strategies.
 
 ## When to use
 
 - Creating data pipeline orchestration with Airflow
 - Designing DAG structures and dependencies
 - Implementing custom operators and sensors
-- Testing Airflow DAGs locally
 - Setting up Airflow in production
 - Debugging failed DAG runs
 
@@ -353,53 +351,6 @@ with DAG(
     risky_task >> [cleanup_task, success_notification]
 ```
 
-### Pattern 5: Testing DAGs
-
-```python
-# tests/test_dags.py
-import pytest
-from datetime import datetime
-from airflow.models import DagBag
-
-@pytest.fixture
-def dagbag():
-    return DagBag(dag_folder='dags/', include_examples=False)
-
-def test_dag_loaded(dagbag):
-    """Test that all DAGs load without errors"""
-    assert len(dagbag.import_errors) == 0, f"DAG import errors: {dagbag.import_errors}"
-
-def test_dag_structure(dagbag):
-    """Test specific DAG structure"""
-    dag = dagbag.get_dag('example_etl')
-
-    assert dag is not None
-    assert len(dag.tasks) == 3
-    assert dag.schedule_interval == '0 6 * * *'
-
-def test_task_dependencies(dagbag):
-    """Test task dependencies are correct"""
-    dag = dagbag.get_dag('example_etl')
-
-    extract_task = dag.get_task('extract')
-    assert 'start' in [t.task_id for t in extract_task.upstream_list]
-    assert 'end' in [t.task_id for t in extract_task.downstream_list]
-
-def test_dag_integrity(dagbag):
-    """Test DAG has no cycles and is valid"""
-    for dag_id, dag in dagbag.dags.items():
-        assert dag.test_cycle() is None, f"Cycle detected in {dag_id}"
-
-# Test individual task logic
-def test_extract_function():
-    """Unit test for extract function"""
-    from dags.example_dag import extract_data
-
-    result = extract_data(ds='2024-01-01')
-    assert 'records' in result
-    assert isinstance(result['records'], int)
-```
-
 ## Project Structure
 
 ```
@@ -442,7 +393,6 @@ Backfills must be:
 - **Use TaskFlow API** - Cleaner code, automatic XCom
 - **Set timeouts** - Prevent zombie tasks
 - **Use `mode='reschedule'`** - For sensors, free up workers
-- **Test DAGs** - Unit tests and integration tests
 - **Idempotent tasks** - Safe to retry
 - **Use deferrable sensors** - Prefer when available; free up worker slots
 

@@ -57,7 +57,6 @@ For any change you implement or review, you own:
 - Explicit contracts at boundaries (HTTP, DB, queues, storage)
 - Safe persistence evolution (schemas, migrations, backfills when needed)
 - Airflow DAG/task correctness with idempotency and backfill safety
-- Tests appropriate to risk (unit/integration/contract)
 - Production operability for shipped behavior (logs/metrics, runbook notes for critical flows)
 
 You must surface:
@@ -85,8 +84,13 @@ You must surface:
    - concrete steps, failure modes, validation, rollback/backout
    - ask only minimal clarifying questions needed to proceed safely
 5. Implement with the “Definition of done” checklist below
-6. Close the loop
-   - tests updated, migration/backfill steps documented, mini-ADR for non-trivial decisions
+6. **Verify after every change** (non-negotiable)
+   - Run `ruff check` and `ruff format --check`; fix all violations before proceeding
+   - Run `basedpyright`; resolve all type errors before proceeding
+   - Run `pytest -q`; all existing tests must pass before proceeding
+   - Do not move to the next step if any check fails
+7. Close the loop
+   - migration/backfill steps documented, mini-ADR for non-trivial decisions
 
 ## Output contract (default response shape)
 
@@ -104,10 +108,11 @@ When responding, prefer this structure (omit irrelevant sections):
 
 - **Correctness**: invariants enforced; idempotent semantics where needed; explicit failure modes.
 - **Maintainability**: clear module boundaries; readable naming; minimal “magic”.
-- **Testability**: domain logic unit-tested; integration risks covered; tests deterministic.
+- **Testability**: domain logic is separable and injectable; integration boundaries are explicit.
 - **Observability**: structured logs; actionable errors; key metrics where meaningful.
 - **Security**: secrets/PII protected; least privilege; safe input handling.
 - **Operations**: timeouts/retries configured; backfill safety controls; runbook notes for critical flows.
+- **Verified**: `ruff`, `basedpyright`, and `pytest` pass with zero errors after every change.
 
 ## Mini-ADR trigger (decision record)
 
