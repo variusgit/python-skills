@@ -55,6 +55,21 @@ task1 >> task2 >> task4
 task1 >> task3 >> task4
 ```
 
+### 3. Scheduling Semantics & Data Intervals
+- Be explicit about timezone (prefer UTC unless business requires local time).
+- Understand `start_date`, `catchup`, and data intervals to avoid accidental massive backfills.
+- Prefer dataset-driven triggers when pipelines depend on upstream availability rather than wall-clock.
+
+### 4. Idempotency & Retry Safety
+- Tasks must be safe to retry: same inputs → same durable outputs.
+- If external side effects exist, encode idempotency keys/dedup.
+- Retries must be bounded and paired with timeouts.
+
+### 5. Resource Controls
+- Use pools/queues for scarce dependencies (DB, APIs, Spark clusters).
+- Cap concurrency for mapped tasks to avoid task explosion.
+- Prefer batching when cardinality is large.
+
 ## Patterns
 
 ### Pattern 1: TaskFlow API (Airflow 2.0+)
@@ -411,6 +426,15 @@ airflow/
 └── requirements.txt
 ```
 
+## Backfill Safety
+
+Backfills must be:
+- bounded (explicit range)
+- throttled (pools/queues/concurrency caps)
+- isolated from production SLAs when necessary
+- observable (clear run naming, metrics/alerts)
+- validated (sanity checks before promoting outputs)
+
 ## Best Practices
 
 ### Do's
@@ -420,6 +444,7 @@ airflow/
 - **Use `mode='reschedule'`** - For sensors, free up workers
 - **Test DAGs** - Unit tests and integration tests
 - **Idempotent tasks** - Safe to retry
+- **Use deferrable sensors** - Prefer when available; free up worker slots
 
 ### Don'ts
 
@@ -436,6 +461,7 @@ airflow/
 - Retries/timeouts are bounded and idempotency-safe.
 - Pools/queues/concurrency limits are set for expensive tasks.
 - Backfill strategy is bounded, throttled, and observable.
+- Alerts route to the correct owners/on-call.
 
 ## Failure modes
 
@@ -450,58 +476,3 @@ airflow/
 - [Airflow Documentation](https://airflow.apache.org/docs/)
 - [Astronomer Guides](https://docs.astronomer.io/learn)
 - [TaskFlow API](https://airflow.apache.org/docs/apache-airflow/stable/tutorial/taskflow.html)
-
-
----
-
-# OpenCode Addendum: Senior Airflow Operating Rules (Append-Only)
-
-This addendum extends the patterns above for production Airflow usage at scale.
-
-## A) DAG Parse Safety (Hard Rule)
-
-- DAG files must be **declarative** and import with **no I/O**.
-- No DB/network/S3 calls at import time.
-- No heavy computation during parse; build task graphs only.
-
-## B) Scheduling Semantics & Data Intervals
-
-- Be explicit about timezone (prefer UTC unless business requires local time).
-- Understand `start_date`, `catchup`, and data intervals to avoid accidental massive backfills.
-- Prefer dataset-driven triggers when pipelines depend on upstream availability rather than wall-clock.
-
-## C) Idempotency & Retry Safety
-
-- Tasks must be safe to retry: same inputs → same durable outputs.
-- If external side effects exist, encode idempotency keys/dedup.
-- Retries must be bounded and paired with timeouts.
-
-## D) Backfill Safety Checklist
-
-Backfills must be:
-- bounded (explicit range)
-- throttled (pools/queues/concurrency caps)
-- isolated from production SLAs when necessary
-- observable (clear run naming, metrics/alerts)
-- validated (sanity checks before promoting outputs)
-
-## E) Resource Controls
-
-- Use pools/queues for scarce dependencies (DB, APIs, Spark clusters).
-- Cap concurrency for mapped tasks to avoid task explosion.
-- Prefer batching when cardinality is large.
-
-## F) Sensors & External Dependencies
-
-- Prefer deferrable sensors when available.
-- Always set sensor timeouts and clear failure behavior.
-- Encode retry/backoff for transient errors; alert on sustained failures.
-
-## G) Per-DAG Shipping Checklist
-
-Before shipping:
-- import/parse test passes (DagBag has no import errors)
-- retries/timeouts set where needed
-- pools/queues configured for expensive tasks
-- backfill strategy documented
-- alerts route to the correct owners/on-call

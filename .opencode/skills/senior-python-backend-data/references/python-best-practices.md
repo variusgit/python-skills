@@ -64,7 +64,7 @@ def calc(i):
     pass
 ```
 
-## 4. Project Structure
+## 4. Project Structure and Architecture Boundaries
 - Separate concerns clearly:
   - business logic,
   - I/O,
@@ -72,6 +72,22 @@ def calc(i):
   - orchestration.
 - Use a `src/{pythonPackageName}` layout.
 - Keep transformation logic independent from storage and orchestration.
+
+Prefer a **functional core / imperative shell**:
+- **Domain**: rules, invariants, state transitions (framework-free)
+- **Application**: use cases, orchestration, transaction boundaries
+- **Infrastructure**: DB/HTTP/broker/S3/Spark adapters
+- **Interface**: HTTP handlers, Airflow tasks/operators, message consumers
+
+Rules:
+- Keep handlers thin; push complexity into domain/application code.
+- Avoid leaking framework objects into domain logic.
+- Make I/O dependencies injectable so core logic is unit-testable.
+
+### Imports Must Be Side-Effect Free
+- No network, DB, or S3 calls at module import time.
+- For Airflow, DAG modules must be importable with **zero I/O**.
+- Lazy-initialize heavy clients inside functions or factories.
 
 ## 5. Functions and Design
 - Functions should do one thing and do it clearly.
@@ -129,23 +145,32 @@ except:
   - machine-specific paths.
 - Externalize configuration using environment variables or config files (`.yaml`, `.toml`).
 - Provide `.env.example` when environment variables are required.
-- Keep secrets out of source control.
+- Keep secrets out of source control, code, and logs; use secret injection mechanisms.
+- Load configuration once into a typed config object.
+- Validate required fields at startup (fail fast).
 
 ## 9. Performance and Resource Usage
 - Be conscious of time and memory complexity.
 - Avoid loading unbounded datasets into memory.
 - Prefer streaming or chunked processing for large data.
 - Optimize only after correctness is ensured and bottlenecks are identified.
+- Make batch transforms deterministic; document dedup keys and tie-breakers.
+- Prefer replayable storage layouts (partitioned, append-only where feasible).
 
-## 10. Testing
-- All non-trivial logic must be tested.
-- Use pytest.
-- Tests must be deterministic and isolated.
-- Unit tests must not depend on external systems.
-- Test behavior, not implementation details.
-- No shared state between tests.
+## 10. Time Semantics
+- Prefer timezone-aware datetimes.
+- Standardize on UTC internally; convert only at boundaries.
+- Never mix naive and aware datetimes.
+- For pipelines, document **event time vs processing time** and watermark logic.
 
-## 11. Documentation
+## 11. Idempotency Patterns
+When retries/replays are possible:
+- Define an idempotency key (request_id/event_id/natural key).
+- Persist idempotency state when correctness requires it.
+- Prefer DB-enforced uniqueness + upserts for safety.
+- Treat "retry + non-idempotent write" as a correctness bug.
+
+## 12. Documentation
 - Every module should have a docstring.
 - Public APIs should document:
   - purpose,
@@ -157,7 +182,7 @@ except:
 - Important decisions or complex behaviors (e.g., Nginx proxying, API routing, environment variables) are documented directly in the code or config file using plain-language comments. Avoid redundant or obvious comments. Do not include agent reasoning or markdown syntax.
 - Always include clear, concise, and relevant comments for non-trivial configurations or code logic, especially for proxy rules, routing, security settings, and environment-specific behavior.
 
-## 12. Security
+## 14. Security
 - Never commit secrets.
 - Validate all external inputs.
 - Apply least-privilege access.
@@ -174,7 +199,7 @@ api_key = os.environ.get("API_KEY")
 api_key = "sk-1234567890a134234"
 ```
 
-## 13. Dependency Management
+## 15. Dependency Management
 
 ### Universal Rule
 
@@ -205,7 +230,7 @@ Follow the runtime’s constraints and the repo’s established process.
 - Prevents version conflicts
 - Package managers handle transitive dependencies correctly
 
-## 14. Configuration and Infrastructure Analysis
+## 16. Configuration and Infrastructure Analysis
 
 When working with Python projects that involve infrastructure:
 
@@ -237,14 +262,14 @@ Security rule:
 
 **If any answer is "unsure" — ASK the user**
 
-## 15. Prohibited Practices
+## 17. Prohibited Practices
 - Global mutable state.
 - Silent exception handling.
 - Magic numbers without explanation.
 - Mixing business logic with I/O.
 - Mixing dependency management systems in one repo (ad-hoc installs or parallel lock/manifest workflows) instead of the repo-standard dependency workflow.
 
-## 16. Package Organization
+## 18. Package Organization
 
 ### Standard Project Layout
 
@@ -290,7 +315,7 @@ from mypackage.utils import format_name
 # Good: Use isort or Ruff for automatic import sorting
 ```
 
-## 17. Final Principle
+## 19. Final Principle
 Readable, typed, testable, and explicit code is more valuable than clever code.
 Production Python should be predictable, observable, and easy to maintain.
 
@@ -309,56 +334,3 @@ Production Python should be predictable, observable, and easy to maintain.
 - Unbounded memory/query patterns causing production saturation.
 - Repo toolchain drift (manual manifest edits, mixed format/lint workflows).
 - Weak typing in boundary code causing contract drift at runtime.
-
----
-
-# OpenCode Addendum: Backend/Data Engineering Extensions (Append-Only)
-
-This addendum extends (and does not replace) the guidance above for senior backend/data work in production systems.
-
-## 1) Architecture Boundaries (Pragmatic DDD-lite)
-
-Prefer a **functional core / imperative shell**:
-
-- **Domain**: rules, invariants, state transitions (framework-free)
-- **Application**: use cases, orchestration, transaction boundaries
-- **Infrastructure**: DB/HTTP/broker/S3/Spark adapters
-- **Interface**: HTTP handlers, Airflow tasks/operators, message consumers
-
-Rules:
-- keep handlers thin; push complexity into domain/application code
-- avoid leaking framework objects into domain logic
-- make I/O dependencies injectable so core logic is unit-testable
-
-## 2) Imports Must Be Side-Effect Free
-
-- No network, DB, or S3 calls at module import time.
-- For Airflow, DAG modules must be importable with **zero I/O**.
-- Lazy-initialize heavy clients inside functions or factories.
-
-## 3) Time Semantics (Backend + Data)
-
-- Prefer timezone-aware datetimes.
-- Standardize on UTC internally; convert only at boundaries.
-- Never mix naive and aware datetimes.
-- For pipelines, document **event time vs processing time** and watermark logic.
-
-## 4) Idempotency Patterns
-
-When retries/replays are possible:
-- define an idempotency key (request_id/event_id/natural key)
-- persist idempotency state when correctness requires it
-- prefer DB-enforced uniqueness + upserts for safety
-- treat "retry + non-idempotent write" as a correctness bug
-
-## 5) Configuration Contract
-
-- Load configuration once into a typed config object.
-- Validate required fields at startup (fail fast).
-- Keep secrets out of code and logs; use secret injection mechanisms.
-
-## 6) Data-Adjacent Code Hygiene
-
-- Stream/chunk large I/O; avoid reading unbounded datasets into memory.
-- Make batch transforms deterministic; document dedup keys and tie-breakers.
-- Prefer replayable storage layouts (partitioned, append-only where feasible).
