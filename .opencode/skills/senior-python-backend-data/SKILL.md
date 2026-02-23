@@ -134,7 +134,8 @@ Read `python-best-practices.md` first for every backend/data task. Then load onl
 - @.opencode/skills/senior-python-backend-data/references/airflow-dag-patterns.md
 
 ### Testing strategy (pytest, integration, Airflow DAG tests, CI gates)
-- @.opencode/skills/senior-python-backend-data/references/python-testing.md
+- Use `python-best-practices.md` as the default testing baseline.
+- For Airflow-specific test expectations, use `airflow-dag-patterns.md`.
 
 ### PostgreSQL persistence (constraints, transactions, migrations, query hygiene)
 - @.opencode/skills/senior-python-backend-data/references/persistence-postgresql.md

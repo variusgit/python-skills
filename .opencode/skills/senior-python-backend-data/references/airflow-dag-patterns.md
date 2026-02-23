@@ -129,6 +129,7 @@ taskflow_etl()
 
 ```python
 # dags/branching_example.py
+from datetime import datetime
 from airflow.decorators import dag, task
 from airflow.operators.python import BranchPythonOperator
 from airflow.operators.empty import EmptyOperator
@@ -188,7 +189,9 @@ branching_pipeline()
 # dags/sensor_patterns.py
 from datetime import datetime, timedelta
 from airflow import DAG
+from airflow.decorators import task
 from airflow.sensors.filesystem import FileSensor
+from airflow.sensors.base import PokeReturnValue
 from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
 from airflow.sensors.external_task import ExternalTaskSensor
 from airflow.operators.python import PythonOperator

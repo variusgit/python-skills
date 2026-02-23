@@ -209,12 +209,12 @@ Follow the runtime’s constraints and the repo’s established process.
 
 When working with Python projects that involve infrastructure:
 
-1. **Check ALL configuration sources:**
+1. **Check configuration sources safely:**
    - Dockerfile ENV instructions
    - docker-compose environment section
    - Kubernetes Secrets / ConfigMaps
-   - CI/CD pipeline variables
-   - .env files in repository
+   - CI/CD pipeline variable names (not secret values)
+   - `.env.example` or documented env schema (do not read `.env` secret values)
    - Configuration files (config.yaml, etc.)
    - Application code (hardcoded fallbacks)
 
@@ -230,6 +230,10 @@ When working with Python projects that involve infrastructure:
 4. **Handle unset variables:**
    - Check if there's a fallback in code
    - Verify default values are appropriate
+
+Security rule:
+   - Never read or expose secret values from `.env` or secret stores.
+   - Validate presence, naming, and wiring of required variables without inspecting secret contents.
 
 **If any answer is "unsure" — ASK the user**
 
