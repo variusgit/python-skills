@@ -127,7 +127,7 @@ def create_order(data):
 
 ### When NOT to require
 
-- **PostgreSQL** — connection pool limits + `statement_timeout` are the correct protection (see `python-postgresql.md`).
+- **PostgreSQL** — connection pool limits + `statement_timeout` are the correct protection.
 - Internal calls within the same process.
 - Async operations with DLQ/retry queue (already decoupled).
 

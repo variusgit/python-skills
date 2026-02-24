@@ -102,18 +102,18 @@ The architect must ensure:
    - Decompose the domain into contexts with clear boundaries
    - Define data ownership per context
    - Define integration contracts between contexts
-   - Load `arch-ddd-patterns.md` for complex domain decomposition
+   - Load `./references/arch-ddd-patterns.md` for complex domain decomposition
 
 4. **Design data models**
    - Choose modeling approach per use case (normalized OLTP, dimensional OLAP, etc.)
    - Choose storage engine per model (PostgreSQL, ClickHouse/Greenplum, S3/Parquet)
    - Define key invariants and enforcement mechanisms
-   - Load `arch-data-modeling.md` for modeling guidance
+   - Load `./references/arch-data-modeling.md` for modeling guidance
 
 5. **Select architectural patterns**
-   - Choose patterns based on NFRs (see `arch-system-design.md`)
+   - Choose patterns based on NFRs (see `./references/arch-system-design.md`)
    - For each pattern: document why chosen, alternatives rejected, consequences
-   - Create ADRs for significant decisions (see `arch-adr-template.md`)
+   - Create ADRs for significant decisions (see `./references/arch-adr-template.md`)
 
 6. **Design for operability**
    - Define observability requirements (metrics, logs, alerts per component)

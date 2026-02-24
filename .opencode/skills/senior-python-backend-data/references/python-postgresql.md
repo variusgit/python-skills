@@ -7,7 +7,7 @@ description: PostgreSQL practices for schema design, constraint enforcement, ind
 
 This document defines PostgreSQL practices for correctness, data integrity, and safe evolution.
 
-Read `python-best-practices.md` first, then apply this document for persistence-specific decisions.
+Read `./python-best-practices.md` first, then apply this document for persistence-specific decisions.
 
 ## When to use
 

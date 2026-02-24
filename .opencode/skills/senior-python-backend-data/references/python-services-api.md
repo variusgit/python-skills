@@ -7,7 +7,7 @@ description: Production Python service and microservice patterns — FastAPI, ai
 
 Practical patterns for building production Python services and microservices. Covers framework selection, service structure, API contracts, lifecycle management, and inter-service communication.
 
-Read `python-best-practices.md` first for architecture principles (functional core / imperative shell, thin handlers, layered boundaries). This document builds on those foundations with service-specific implementation patterns.
+Read `./python-best-practices.md` first for architecture principles (functional core / imperative shell, thin handlers, layered boundaries). This document builds on those foundations with service-specific implementation patterns.
 
 ## When to use
 
@@ -406,7 +406,7 @@ async def graceful_shutdown(app):
 - Load configuration once into a typed config object (Pydantic `BaseSettings` or similar).
 - Validate required fields at startup — fail fast on missing or invalid config.
 - Never hardcode secrets; use env vars or secret managers.
-- See `python-best-practices.md` section 8 for details.
+- See `./python-best-practices.md` section 8 for details.
 
 ## Inter-service communication
 

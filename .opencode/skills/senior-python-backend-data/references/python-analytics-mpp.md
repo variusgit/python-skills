@@ -15,7 +15,7 @@ Use Greenplum/ClickHouse for:
 - reporting datasets
 Avoid using it as the source of truth for transactional workflows; use PostgreSQL for that.
 
-Read `python-best-practices.md` first, then use this document for analytics-store engine decisions.
+Read `./python-best-practices.md` first, then use this document for analytics-store engine decisions.
 
 ## Ingestion patterns
 

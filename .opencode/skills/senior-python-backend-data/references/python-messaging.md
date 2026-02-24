@@ -14,7 +14,7 @@ Assume **at-least-once delivery** unless proven otherwise.
 - Designing reliable event publishing with transactional consistency.
 - Investigating duplicate processing or message-loss incidents.
 
-Read `python-best-practices.md` first, then apply this document for messaging-specific delivery semantics.
+Read `./python-best-practices.md` first, then apply this document for messaging-specific delivery semantics.
 
 ## Idempotency (required)
 

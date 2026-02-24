@@ -75,7 +75,7 @@ with pytest.warns(DeprecationWarning, match="old_func"):
 
 ## Fixtures (advanced)
 
-For basic fixture usage and conftest.py, see `SKILL.md`. This section covers advanced patterns.
+For basic fixture usage and conftest.py, see `../SKILL.md`. This section covers advanced patterns.
 
 ### Scopes
 
@@ -182,7 +182,7 @@ def test_multiple_users(make_user):
 
 ## Parametrization (advanced)
 
-For basic `@pytest.mark.parametrize` with IDs, see `SKILL.md`.
+For basic `@pytest.mark.parametrize` with IDs, see `../SKILL.md`.
 
 ### Multiple parameter axes
 
@@ -222,7 +222,7 @@ def test_compute(backend):
 
 ## Mocking (advanced)
 
-For mocking strategy (where to mock) and `autospec`, see `SKILL.md`.
+For mocking strategy (where to mock) and `autospec`, see `../SKILL.md`.
 
 ### Configuring return values
 
@@ -302,7 +302,7 @@ def test_service_with_spec():
 
 ## Async testing (advanced)
 
-For basic `@pytest.mark.asyncio` usage, see `SKILL.md`.
+For basic `@pytest.mark.asyncio` usage, see `../SKILL.md`.
 
 ### Async fixtures
 

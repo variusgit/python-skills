@@ -14,7 +14,7 @@ Write a mini-ADR when a change is non-trivial: schema strategy, consistency mode
 - Performance/cost/operability decisions with long-lived impact.
 - Compatibility-policy changes for APIs/events.
 
-Read `python-best-practices.md` first, then use this template to record non-trivial decisions.
+Read `./python-best-practices.md` first, then use this template to record non-trivial decisions.
 
 ## Template
 

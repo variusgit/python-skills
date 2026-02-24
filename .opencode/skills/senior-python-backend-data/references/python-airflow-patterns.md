@@ -23,7 +23,7 @@ Production-ready patterns for Apache Airflow including DAG design, operators, se
 - Setting up Airflow in production
 - Debugging failed DAG runs
 
-Read `python-best-practices.md` first, then use this document for Airflow-specific constraints.
+Read `./python-best-practices.md` first, then use this document for Airflow-specific constraints.
 
 ## Core Concepts
 

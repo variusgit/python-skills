@@ -7,7 +7,7 @@ description: Practices for batch data jobs and object storage layouts — S3 par
 
 This document defines practices for batch data jobs and object storage layouts that support reprocessing, correctness, and cost-efficiency.
 
-Read `python-best-practices.md` first, then apply this document for data-job and storage-specific decisions.
+Read `./python-best-practices.md` first, then apply this document for data-job and storage-specific decisions.
 
 ## When to use
 
