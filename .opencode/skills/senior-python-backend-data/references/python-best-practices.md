@@ -182,7 +182,7 @@ When retries/replays are possible:
 - Important decisions or complex behaviors (e.g., Nginx proxying, API routing, environment variables) are documented directly in the code or config file using plain-language comments. Avoid redundant or obvious comments. Do not include agent reasoning or markdown syntax.
 - Always include clear, concise, and relevant comments for non-trivial configurations or code logic, especially for proxy rules, routing, security settings, and environment-specific behavior.
 
-## 14. Security
+## 13. Security
 - Never commit secrets.
 - Validate all external inputs.
 - Apply least-privilege access.
@@ -199,7 +199,7 @@ api_key = os.environ.get("API_KEY")
 api_key = "sk-1234567890a134234"
 ```
 
-## 15. Dependency Management
+## 14. Dependency Management
 
 ### Universal Rule
 
@@ -230,7 +230,7 @@ Follow the runtime’s constraints and the repo’s established process.
 - Prevents version conflicts
 - Package managers handle transitive dependencies correctly
 
-## 16. Configuration and Infrastructure Analysis
+## 15. Configuration and Infrastructure Analysis
 
 When working with Python projects that involve infrastructure:
 
@@ -262,14 +262,14 @@ Security rule:
 
 **If any answer is "unsure" — ASK the user**
 
-## 17. Prohibited Practices
+## 16. Prohibited Practices
 - Global mutable state.
 - Silent exception handling.
 - Magic numbers without explanation.
 - Mixing business logic with I/O.
 - Mixing dependency management systems in one repo (ad-hoc installs or parallel lock/manifest workflows) instead of the repo-standard dependency workflow.
 
-## 18. Package Organization
+## 17. Package Organization
 
 ### Standard Project Layout
 
@@ -315,7 +315,7 @@ from mypackage.utils import format_name
 # Good: Use isort or Ruff for automatic import sorting
 ```
 
-## 19. Final Principle
+## 18. Final Principle
 Readable, typed, testable, and explicit code is more valuable than clever code.
 Production Python should be predictable, observable, and easy to maintain.
 

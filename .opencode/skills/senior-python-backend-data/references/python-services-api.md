@@ -357,7 +357,7 @@ For endpoints that create/charge/trigger:
   - key identifiers (non-PII)
   - latency and status
 - Emit metrics for rate/latency/error classes.
-- For deeper observability guidance, see `python-production-readiness.md`.
+- Observability patterns (structured logs, metrics, correlation IDs) should be part of every service.
 
 ## Service lifecycle
 

@@ -74,7 +74,7 @@ You must surface:
 ## How to work (agent workflow)
 
 1. **Classify the task**
-   - API / DB & migrations / Airflow / data job & storage / messaging async / production readiness
+   - API / DB & migrations / Airflow / data job & storage / messaging async
 2. **Identify invariants and risks**
    - data loss/corruption, downtime, backfill blast radius, security/PII, cost/performance regression
 3. **Load only the relevant reference docs** (see “Reference routing”)
@@ -86,7 +86,7 @@ You must surface:
    - Run `ruff check` and `ruff format --check`; fix all violations before proceeding
    - Run `basedpyright`; resolve all type errors before proceeding
    - Run `pytest -q`; all existing tests must pass before proceeding
-   - If tests fail, do not author or modify tests in this skill; delegate all test creation/modification to @.opencode/skills/python-testing/SKILL.md
+   - If tests fail, do not author or modify tests in this skill; delegate all test creation/modification to the testing agent
    - Do not move to the next step if any check fails
 7. Close the loop
    - migration/backfill steps documented, mini-ADR for non-trivial decisions
@@ -150,9 +150,6 @@ Read `python-best-practices.md` first for every backend/data task. Then load onl
 
 ### MPP / analytics (Greenplum or ClickHouse)
 - @.opencode/skills/senior-python-backend-data/references/python-analytics-mpp.md
-
-### Production readiness (logging, metrics, retries/timeouts, incident playbooks, security)
-- @.opencode/skills/senior-python-backend-data/references/python-production-readiness.md
 
 **Conflict rule:** treat references as source of truth. If two references conflict, prefer the most task-specific doc; otherwise prefer `python-best-practices.md`. If the conflict impacts correctness/safety, call it out and choose the safer default.
 

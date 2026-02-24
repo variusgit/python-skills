@@ -251,6 +251,15 @@ Group findings by severity (blockers first). End with a summary:
 - **Ignoring what's NOT in the diff**: callers, consumers, and downstream effects of the change.
 - **Style wars**: arguing formatting when linters handle it.
 
+## Reference routing (progressive disclosure)
+
+Load references to deepen evaluation accuracy. Do not load all at once — pick based on what the change touches.
+
+### Production readiness criteria (load for any production-bound review)
+- @.opencode/skills/python-code-review/references/python-production-readiness-criteria.md
+
+Concrete red flags, correct pattern characteristics, and severity guidance for passes 5 (Reliability), 6 (Observability), and operational aspects of pass 8.
+
 ## Checklist (final gate)
 
 Before submitting the review, verify:
