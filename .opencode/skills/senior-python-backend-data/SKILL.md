@@ -1,12 +1,12 @@
 ---
 name: senior-python-backend-data
-description: Ship and review production Python backend + data workflow changes (APIs, PostgreSQL, Airflow, Spark/S3) with senior-level correctness, testing, and operability. Use for backend features/refactors, API contract changes, schema migrations, Airflow DAGs/backfills, data jobs/storage layouts, or production incident triage.
+description: Ship and review production Python backend + data workflow changes (APIs, PostgreSQL, Airflow, Spark/S3) with senior-level correctness and operability. Use for backend features/refactors, API contract changes, schema migrations, Airflow DAGs/backfills, data jobs/storage layouts, or production incident triage.
 compatibility: opencode
 metadata:
   audience: "senior"
   language: "python"
-  domains: "backend,data-engineering,orchestration,testing"
-  primary_tools: "airflow,pytest,sql"
+  domains: "backend,data-engineering,orchestration"
+  primary_tools: "python,airflow,sql,ruff,basedpyright,pyspark"
 ---
 
 # Senior Python Backend/Data (Production Delivery Skill)
@@ -19,7 +19,6 @@ This is a **task skill**: a reusable set of instructions that tells an agent *ho
 - Enforces architecture boundaries (domain logic vs I/O vs orchestration) to keep code testable and maintainable.
 - Builds and operates Airflow workflows (DAG semantics, retries/timeouts, safe backfills, operational controls).
 - Evolves persistence safely (constraints, transactions, expand/contract migrations).
-- Applies senior-grade testing discipline (risk-based pyramid, deterministic tests, CI gates).
 - Hardens for production (observability, security/PII, performance and reliability hygiene).
 
 ## When to use this skill
@@ -31,7 +30,6 @@ Use this skill when the task involves any of the following:
 - **Database** schema/query work (PostgreSQL), migrations, backfills, data integrity concerns
 - Authoring/reviewing **Airflow DAGs**, tasks, sensors, schedules, or backfill/reprocessing plans
 - Building/refactoring **data jobs** (e.g., PySpark) and **storage layouts** (S3/Parquet partitions)
-- Building/improving **tests** (pytest, integration/contract tests), fixing flaky tests, defining CI gates
 - Troubleshooting **production incidents** in backend/data workloads (timeouts, retries, data gaps, bad backfills)
 
 Do not use this skill for front-end-only changes or generic brainstorming unrelated to production backend/data delivery.
@@ -76,7 +74,7 @@ You must surface:
 ## How to work (agent workflow)
 
 1. **Classify the task**
-   - API / DB & migrations / Airflow / data job & storage / messaging async / testing / production readiness
+   - API / DB & migrations / Airflow / data job & storage / messaging async / production readiness
 2. **Identify invariants and risks**
    - data loss/corruption, downtime, backfill blast radius, security/PII, cost/performance regression
 3. **Load only the relevant reference docs** (see “Reference routing”)
@@ -88,6 +86,7 @@ You must surface:
    - Run `ruff check` and `ruff format --check`; fix all violations before proceeding
    - Run `basedpyright`; resolve all type errors before proceeding
    - Run `pytest -q`; all existing tests must pass before proceeding
+   - If tests fail, do not author or modify tests in this skill; delegate all test creation/modification to @.opencode/skills/python-testing/SKILL.md
    - Do not move to the next step if any check fails
 7. Close the loop
    - migration/backfill steps documented, mini-ADR for non-trivial decisions
@@ -99,7 +98,6 @@ When responding, prefer this structure (omit irrelevant sections):
 - **Assumptions & constraints**
 - **Plan**
 - **Implementation details** (code-level notes and key decisions)
-- **Tests** (what to add/run and why)
 - **Rollout / migration / backfill safety**
 - **Observability & ops notes**
 - **Risks & mitigations**
@@ -138,15 +136,11 @@ Read `python-best-practices.md` first for every backend/data task. Then load onl
 ### Airflow DAG authoring / schedules / backfills / sensors
 - @.opencode/skills/senior-python-backend-data/references/airflow-dag-patterns.md
 
-### Testing strategy (pytest, integration, Airflow DAG tests, CI gates)
-- Use `python-best-practices.md` as the default testing baseline.
-- For Airflow-specific test expectations, use `airflow-dag-patterns.md`.
-
 ### PostgreSQL persistence (constraints, transactions, migrations, query hygiene)
 - @.opencode/skills/senior-python-backend-data/references/persistence-postgresql.md
 
-### API design (contracts, errors, idempotency keys, pagination, compatibility)
-- @.opencode/skills/senior-python-backend-data/references/api-design.md
+### Services & API design (FastAPI, aiohttp, gRPC, contracts, microservice patterns)
+- @.opencode/skills/senior-python-backend-data/references/microservices-webservices.md
 
 ### Data jobs & storage (S3 layout, Parquet partitions, incremental loads, PySpark hygiene)
 - @.opencode/skills/senior-python-backend-data/references/data-jobs-and-storage.md
