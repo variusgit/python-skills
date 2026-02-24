@@ -403,6 +403,15 @@ markers = [
 ]
 ```
 
+## Reference routing
+
+This skill stays focused on **what to test** and **testing strategy**. For detailed pytest mechanics, load the reference below.
+
+### Detailed pytest patterns (fixtures, mocking, assertions, async, CLI)
+- @.opencode/skills/python-testing/references/pytest-patterns.md
+
+Load when writing or reviewing tests and you need specific pytest recipes (advanced fixtures, parametrized fixtures, mocking properties/context managers, side-effect testing, async fixtures, CLI options).
+
 ## Best practices
 
 ### Do
