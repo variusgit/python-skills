@@ -1,5 +1,5 @@
 ---
-name: persistence-postgresql
+name: python-postgresql
 description: PostgreSQL practices for schema design, constraint enforcement, indexing, transactions, concurrency, idempotent writes, query patterns, connection management, expand/contract migrations, and backfill safety. Use when designing or changing schemas, writing migrations, or reviewing query/transaction correctness.
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: pytest-patterns
+name: python-pytest-patterns
 description: Practical pytest cookbook — assertions, advanced fixtures, parametrization, mocking techniques, async patterns, exception testing, side-effect testing, test classes, and CLI reference. Use when writing or reviewing tests and need specific pytest mechanics.
 ---
 

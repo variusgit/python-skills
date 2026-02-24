@@ -1,5 +1,5 @@
 ---
-name: analytics-mpp
+name: python-analytics-mpp
 description: Guidance for MPP analytics stores (Greenplum, ClickHouse) — when to use, idempotent ingestion, schema/partitioning/distribution design, and data quality checks. Use when building or reviewing ingestion into or queries against the analytics layer.
 ---
 

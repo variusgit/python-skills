@@ -1,5 +1,5 @@
 ---
-name: data-jobs-and-storage
+name: python-data-jobs
 description: Practices for batch data jobs and object storage layouts — S3 partitioning, Parquet tuning, PySpark job structure and performance, write patterns, incremental loads, data validation, error handling, and schema management. Use when building, refactoring, or reviewing data jobs and storage designs.
 ---
 

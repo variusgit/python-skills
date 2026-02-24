@@ -122,7 +122,7 @@ Create a mini-ADR when any of these are true:
 - compatibility policy changes for APIs/events
 
 Use:
-- @.opencode/skills/senior-python-backend-data/references/mini-adr.md
+- @.opencode/skills/senior-python-backend-data/references/python-adr-template.md
 
 ## Reference routing (progressive disclosure)
 
@@ -134,25 +134,25 @@ This skill stays high-level on purpose. Load deep technical detail **only when r
 Read `python-best-practices.md` first for every backend/data task. Then load only the most relevant task-specific reference(s).
 
 ### Airflow DAG authoring / schedules / backfills / sensors
-- @.opencode/skills/senior-python-backend-data/references/airflow-dag-patterns.md
+- @.opencode/skills/senior-python-backend-data/references/python-airflow-patterns.md
 
 ### PostgreSQL persistence (constraints, transactions, migrations, query hygiene)
-- @.opencode/skills/senior-python-backend-data/references/persistence-postgresql.md
+- @.opencode/skills/senior-python-backend-data/references/python-postgresql.md
 
 ### Services & API design (FastAPI, aiohttp, gRPC, contracts, microservice patterns)
-- @.opencode/skills/senior-python-backend-data/references/microservices-webservices.md
+- @.opencode/skills/senior-python-backend-data/references/python-services-api.md
 
 ### Data jobs & storage (S3 layout, Parquet partitions, incremental loads, PySpark hygiene)
-- @.opencode/skills/senior-python-backend-data/references/data-jobs-and-storage.md
+- @.opencode/skills/senior-python-backend-data/references/python-data-jobs.md
 
 ### Messaging / async processing (at-least-once, dedup, outbox, DLQ)
-- @.opencode/skills/senior-python-backend-data/references/messaging-async-processing.md
+- @.opencode/skills/senior-python-backend-data/references/python-messaging.md
 
 ### MPP / analytics (Greenplum or ClickHouse)
-- @.opencode/skills/senior-python-backend-data/references/analytics-mpp.md
+- @.opencode/skills/senior-python-backend-data/references/python-analytics-mpp.md
 
 ### Production readiness (logging, metrics, retries/timeouts, incident playbooks, security)
-- @.opencode/skills/senior-python-backend-data/references/production-readiness.md
+- @.opencode/skills/senior-python-backend-data/references/python-production-readiness.md
 
 **Conflict rule:** treat references as source of truth. If two references conflict, prefer the most task-specific doc; otherwise prefer `python-best-practices.md`. If the conflict impacts correctness/safety, call it out and choose the safer default.
 

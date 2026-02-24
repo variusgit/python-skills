@@ -1,5 +1,5 @@
 ---
-name: microservices-webservices
+name: python-services-api
 description: Production Python service and microservice patterns — FastAPI, aiohttp, gRPC, API contracts, project structure, dependency injection, healthchecks, graceful shutdown, inter-service communication. Use when designing, implementing, or reviewing HTTP/RPC services.
 ---
 
@@ -357,7 +357,7 @@ For endpoints that create/charge/trigger:
   - key identifiers (non-PII)
   - latency and status
 - Emit metrics for rate/latency/error classes.
-- For deeper observability guidance, see `production-readiness.md`.
+- For deeper observability guidance, see `python-production-readiness.md`.
 
 ## Service lifecycle
 
@@ -435,7 +435,7 @@ class OrderClient:
 
 ### Asynchronous (messaging)
 
-For event-driven inter-service communication (Kafka, RabbitMQ, SQS), defer to `messaging-async-processing.md`. Key considerations:
+For event-driven inter-service communication (Kafka, RabbitMQ, SQS), defer to `python-messaging.md`. Key considerations:
 - Prefer async messaging when the caller does not need an immediate response.
 - Ensure consumer idempotency (at-least-once delivery).
 - Use outbox pattern when DB consistency and event publishing must be atomic.
