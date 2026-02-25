@@ -34,9 +34,9 @@ This is a **task skill** for a dedicated architecture agent: it defines *how to 
 - Decomposing architectural decisions into a delivery plan.
 
 Do not use this skill for:
-- Writing implementation code (builder's responsibility).
-- Writing or designing tests (tester's responsibility).
-- Reviewing code changes (evaluator's responsibility).
+- Writing implementation code (outside this skill's scope).
+- Writing or designing tests (outside this skill's scope).
+- Reviewing code changes (outside this skill's scope).
 - Operational troubleshooting of running systems.
 
 ## Fixed foundations (given stack constraints)
@@ -65,9 +65,9 @@ The architect owns:
 - Delivery decomposition (architecture → implementable work units)
 
 The architect does NOT own:
-- Implementation code — builder implements the design
-- Test strategy and test code — tester defines and implements tests
-- Code review criteria — evaluator assesses code quality
+- Implementation code — outside this skill's scope
+- Test strategy and test code — outside this skill's scope
+- Code review criteria — outside this skill's scope
 - Kubernetes manifests and deployment configs — infrastructure concern
 
 The architect must ensure:

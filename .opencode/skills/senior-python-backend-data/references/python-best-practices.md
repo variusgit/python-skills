@@ -352,7 +352,7 @@ myproject/
 │               ├── descriptive_sql_name1.sql
 │               ├── descriptive_sql_name2.sql
 │               └── descriptive_sql_name3.sql
-├── tests/                 # internal structure defined by testing agent
+├── tests/                 # structure follows test type (unit/, integration/, contract/)
 │   ├── __init__.py
 │   ├── conftest.py
 │   └── ...
@@ -452,7 +452,7 @@ myproject/
 │           └── queries/
 │               ├── __init__.py
 │               └── descriptive_sql_name.sql
-├── tests/                 # internal structure defined by testing agent
+├── tests/                 # structure follows test type (unit/, integration/, contract/)
 │   ├── __init__.py
 │   ├── conftest.py
 │   └── ...

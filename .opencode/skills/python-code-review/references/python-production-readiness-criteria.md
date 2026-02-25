@@ -9,7 +9,7 @@ Concrete criteria for evaluating production readiness during code review. This d
 
 This is an **evaluation guide**, not a build guide. Check reviewed code against these criteria — do not prescribe specific implementations.
 
-For domain-specific patterns the builder is expected to follow, load the relevant builder reference (see code-review SKILL.md reference routing).
+This document covers cross-cutting production readiness criteria. For domain-specific review (Airflow, PostgreSQL, data jobs), apply the domain-specific checks in the code-review SKILL.md (passes 2 and 8).
 
 ## When to use
 

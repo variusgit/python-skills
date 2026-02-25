@@ -86,7 +86,7 @@ You must surface:
    - Run `ruff check` and `ruff format --check`; fix all violations before proceeding
    - Run `basedpyright`; resolve all type errors before proceeding
    - Run `pytest -q`; all existing tests must pass before proceeding
-   - If tests fail, do not author or modify tests in this skill; delegate all test creation/modification to the testing agent
+   - If tests fail, do not author or modify tests. In your output, document what tests need to be created or updated: affected files, changed invariants, and expected behavior
    - Do not move to the next step if any check fails
 7. Close the loop
    - migration/backfill steps documented, mini-ADR for non-trivial decisions
