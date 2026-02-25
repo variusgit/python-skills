@@ -179,10 +179,10 @@ def test_no_dag_cycles(dagbag):
 
 #### 3) Task/business logic tests
 
-Keep business logic **out of DAG files** — put it in importable modules under `src/`, unit test it separately, and in DAG tests only validate wiring and config.
+Keep business logic **out of DAG files** — put it in importable modules under `dags/libs/`, unit test it separately, and in DAG tests only validate wiring and config.
 
 ```python
-from mypackage.etl.customers import transform_customers
+from dags.libs.customers import transform_customers
 
 def test_transform_customers_drops_nulls():
     raw = [{"id": 1, "name": "Alice"}, {"id": 2, "name": None}]

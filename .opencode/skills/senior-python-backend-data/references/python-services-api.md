@@ -42,8 +42,8 @@ Read `./python-best-practices.md` first for architecture principles (functional 
 ```python
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from myservice.config import Settings
-from myservice.infrastructure.database import Database
+from mypackage.core.config import Settings
+from mypackage.storage.database import Database
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -65,8 +65,8 @@ def create_app() -> FastAPI:
 
 ```python
 from fastapi import APIRouter, Depends, HTTPException, status
-from myservice.api.dependencies import get_db_session, get_current_user
-from myservice.domain.models import UserCreate, UserResponse
+from mypackage.api.dependencies import get_db_session, get_current_user
+from mypackage.models import UserCreate, UserResponse
 
 router = APIRouter()
 
@@ -231,7 +231,7 @@ message UserResponse {
 ```python
 import grpc
 from concurrent import futures
-from myservice.proto import user_service_pb2_grpc, user_service_pb2
+from mypackage.proto import user_service_pb2_grpc, user_service_pb2
 
 class UserServiceServicer(user_service_pb2_grpc.UserServiceServicer):
     async def GetUser(self, request, context):
@@ -415,7 +415,7 @@ Use gRPC when:
 
 ```python
 import grpc
-from myservice.proto import order_service_pb2_grpc, order_service_pb2
+from mypackage.proto import order_service_pb2_grpc, order_service_pb2
 
 async def get_order(order_id: str):
     async with grpc.aio.insecure_channel("orders-service:50051") as channel:
@@ -429,8 +429,8 @@ async def get_order(order_id: str):
 ## Checklist
 
 - Framework chosen with clear rationale (FastAPI / aiohttp / gRPC).
-- Service follows layered architecture (domain / application / infrastructure / interface).
-- Handlers are thin; business logic is in domain/application layer.
+- Service follows layered architecture (api / core / models / storage).
+- Handlers are thin; business logic is in models layer.
 - API contracts are explicit (input/output/error models).
 - Contracts are backward compatible; breaking changes are versioned.
 - Write paths are idempotent where retries are possible.
