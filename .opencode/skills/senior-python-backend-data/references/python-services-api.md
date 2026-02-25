@@ -35,40 +35,6 @@ Read `./python-best-practices.md` first for architecture principles (functional 
 - Service-to-service calls where latency and contract strictness matter? **gRPC**.
 - Multiple protocols needed? Run FastAPI + gRPC in the same process via separate ports.
 
-## Service structure (project layout)
-
-Follows the layered architecture from `python-best-practices.md`:
-
-```
-src/myservice/
-├── main.py              # Application factory + entrypoint
-├── config.py            # Typed config, env loading, validation
-├── domain/              # Business rules, invariants (framework-free)
-│   ├── models.py
-│   └── services.py
-├── application/         # Use cases, orchestration, transaction boundaries
-│   └── use_cases.py
-├── infrastructure/      # DB, HTTP clients, external adapters
-│   ├── database.py
-│   ├── repositories.py
-│   └── clients.py
-├── api/                 # HTTP interface layer
-│   ├── dependencies.py  # Depends factories (DB session, auth, config)
-│   ├── errors.py        # Exception handlers, error shapes
-│   ├── middleware.py     # CORS, request ID, logging
-│   └── routes/
-│       ├── health.py
-│       ├── users.py
-│       └── orders.py
-└── proto/               # gRPC protobuf definitions (if applicable)
-    └── service.proto
-```
-
-Rules:
-- Routers and handlers are thin — delegate to domain/application layer.
-- Domain layer has zero framework imports.
-- Infrastructure adapters are injectable.
-
 ## FastAPI patterns
 
 ### Application factory + lifespan

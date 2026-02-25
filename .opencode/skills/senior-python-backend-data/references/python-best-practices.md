@@ -273,30 +273,199 @@ Security rule:
 
 ### Standard Project Layout
 
+A repository may contain one or more projects of different types. For example, an Airflow project orchestrating a Python FastAPI service deployed on Kubernetes.
+
+Choose the layout matching the project type. Common elements across all layouts:
+
+- `ci_configs/` — CI/CD engine configuration (environment-specific YAML files).
+- `pyproject.toml` — single source for dependencies, build config, and tool settings.
+- `.python-version` — pyenv pin for reproducible Python version.
+- `.gitlab-ci.yml` — pipeline definition.
+- `.gitignore`, `README.md` — standard repo hygiene.
+
+#### Airflow
+
 ```
 myproject/
-├── src/
-│   └── mypackage/
+├── ci_configs/
+│   ├── prod.yaml
+│   └── dev.yaml
+├── dags/
+│   ├── dag1.py
+│   ├── dag2.py
+│   ├── resources/
+│   │   ├── __init__.py
+│   │   ├── random_template.html
+│   │   └── random_file.sql
+│   └── libs/
 │       ├── __init__.py
-│       ├── main.py
-│       ├── api/
-│       │   ├── __init__.py
-│       │   └── routes.py
-│       ├── models/
-│       │   ├── __init__.py
-│       │   └── user.py
-│       └── utils/
-│           ├── __init__.py
-│           └── helpers.py
+│       ├── lib.py
+│       └── vars.py
 ├── tests/
 │   ├── __init__.py
 │   ├── conftest.py
-│   ├── test_api.py
-│   └── test_models.py
+│   └── test_dags.py
 ├── pyproject.toml
 ├── README.md
+├── .gitlab-ci.yml
+├── .python-version
 └── .gitignore
 ```
+
+- `dags/` — DAG definitions at top level; Airflow scheduler scans this directory.
+- `dags/libs/` — shared helpers and variables imported by DAGs.
+- `dags/resources/` — templates, SQL files, and other static assets used by tasks.
+
+#### Python CLI + K8s REST
+
+```
+myproject/
+├── ci_configs/
+│   ├── prod.yaml
+│   └── dev.yaml
+├── docker/
+│   ├── volumes/
+│   │   └── ...
+│   ├── app1.Dockerfile
+│   ├── app2.Dockerfile
+│   ├── Dockerfile
+│   └── docker-compose.yaml
+├── src/
+│   └── mypackage/
+│       ├── __init__.py
+│       ├── __main__.py
+│       ├── api/
+│       │   ├── __init__.py
+│       │   └── routes.py
+│       ├── core/
+│       │   ├── __init__.py
+│       │   ├── logging.py
+│       │   ├── logging.yaml
+│       │   └── utils.py
+│       ├── models/
+│       │   ├── __init__.py
+│       │   └── ...
+│       └── storage/
+│           ├── __init__.py
+│           └── queries/
+│               ├── __init__.py
+│               ├── descriptive_sql_name1.sql
+│               ├── descriptive_sql_name2.sql
+│               └── descriptive_sql_name3.sql
+├── tests/                 # internal structure defined by testing agent
+│   ├── __init__.py
+│   ├── conftest.py
+│   └── ...
+├── pyproject.toml
+├── README.md
+├── .env.example
+├── .gitlab-ci.yml
+├── .python-version
+└── .gitignore
+```
+
+- `docker/` — Dockerfiles and compose config. Use multiple named Dockerfiles (`app1.Dockerfile`, `app2.Dockerfile`) when the repo produces more than one image; single `Dockerfile` otherwise.
+- `src/mypackage/core/logging.yaml` — logging dict-config loaded via `importlib.resources.files` + `yaml.safe_load` + `logging.config.dictConfig`.
+- `src/mypackage/models/` — domain models (Pydantic, dataclasses, domain entities). Zero framework imports.
+- `src/mypackage/storage/queries/` — raw SQL files with descriptive names, loaded at runtime.
+- `.env.example` — documents required environment variables (no secret values).
+
+Architectural layers inside `src/mypackage/`:
+
+| Directory | Layer | Rules |
+|-----------|-------|-------|
+| `api/` | Interface | Thin handlers, input validation, error shaping. No business logic. |
+| `core/` | Cross-cutting | Config, logging, shared utilities. |
+| `models/` | Domain | Domain models, business rules, invariants. Zero framework imports. |
+| `storage/` | Infrastructure | DB access, SQL queries, external API clients, repositories. |
+
+Domain logic has zero framework imports. Infrastructure adapters are injectable.
+
+#### Pure dbt
+
+```
+myproject/
+├── analyses/
+│   └── .gitkeep
+├── ci_configs/
+│   ├── prod.yaml
+│   └── dev.yaml
+├── docker/
+│   └── Dockerfile
+├── macros/
+│   └── .gitkeep
+├── models/
+│   ├── intermediate/
+│   │   ├── my_first_dbt_model.sql
+│   │   ├── my_second_dbt_model.sql
+│   │   └── schema.yml
+│   ├── marts/
+│   │   ├── my_first_dbt_model.sql
+│   │   ├── my_second_dbt_model.sql
+│   │   └── schema.yml
+│   └── staging/
+│       ├── my_first_dbt_model.sql
+│       ├── my_second_dbt_model.sql
+│       └── schema.yml
+├── seeds/
+│   └── .gitkeep
+├── snapshots/
+│   └── .gitkeep
+├── tests/
+│   └── .gitkeep
+├── .env.example
+├── .gitignore
+├── .gitlab-ci.yml
+├── .python-version
+├── README.md
+├── dbt_project.yml
+├── pyproject.toml
+└── selectors.yml
+```
+
+- `models/staging/` — light view wrappers over source tables.
+- `models/intermediate/` — joined/filtered temp tables for performance.
+- `models/marts/` — final output tables consumed by downstream.
+- Each model layer has its own `schema.yml` for column docs, tests, and contracts.
+
+#### Spark
+
+```
+myproject/
+├── ci_configs/
+│   ├── prod.yaml
+│   └── dev.yaml
+├── src/
+│   └── mypackage/
+│       ├── __init__.py
+│       ├── __main__.py
+│       ├── core/
+│       │   ├── __init__.py
+│       │   ├── logging.py
+│       │   ├── logging.yaml
+│       │   └── utils.py
+│       ├── models/
+│       │   ├── __init__.py
+│       │   └── ...
+│       └── storage/
+│           ├── __init__.py
+│           └── queries/
+│               ├── __init__.py
+│               └── descriptive_sql_name.sql
+├── tests/                 # internal structure defined by testing agent
+│   ├── __init__.py
+│   ├── conftest.py
+│   └── ...
+├── pyproject.toml
+├── README.md
+├── .env.example
+├── .gitlab-ci.yml
+├── .python-version
+└── .gitignore
+```
+
+- Same `src/` layout as Python CLI + K8s REST, but without `docker/` and without `api/` — Spark jobs are submitted to cluster via `spark-submit`, not served as HTTP endpoints.
+- `src/mypackage/__main__.py` — entry point for `spark-submit`.
 
 ### Import Conventions
 

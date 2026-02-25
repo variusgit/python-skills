@@ -73,7 +73,7 @@ task1 >> task3 >> task4
 ### Pattern 1: TaskFlow API (Airflow 2.0+)
 
 > Note: The following example keeps logic inline for brevity. In production, keep DAG files thin:
-> move extract/transform/load logic into importable modules (e.g., `dags/common/` or `src/`),
+> move extract/transform/load logic into importable modules (e.g., `dags/libs/`),
 > then call those functions from tasks to improve testability and DAG parse performance.
 
 
@@ -349,32 +349,6 @@ with DAG(
     )
 
     risky_task >> [cleanup_task, success_notification]
-```
-
-## Project Structure
-
-```
-airflow/
-├── dags/
-│   ├── __init__.py
-│   ├── common/
-│   │   ├── __init__.py
-│   │   ├── operators.py    # Custom operators
-│   │   ├── sensors.py      # Custom sensors
-│   │   └── callbacks.py    # Alert callbacks
-│   ├── etl/
-│   │   ├── customers.py
-│   │   └── orders.py
-│   └── ml/
-│       └── training.py
-├── plugins/
-│   └── custom_plugin.py
-├── tests/
-│   ├── __init__.py
-│   ├── test_dags.py
-│   └── test_operators.py
-├── docker-compose.yml
-└── requirements.txt
 ```
 
 ## Backfill Safety
