@@ -65,6 +65,7 @@ You must surface:
 
 ## Operating principles (senior bar)
 
+- **Simplicity first (YAGNI)**: start with the simplest solution that satisfies current requirements. Add abstraction, indirection, and infrastructure (caching, queues, CQRS) only when a concrete need is demonstrated — not "just in case."
 - **Correctness over convenience**: assume retries, duplicates, partial failures, concurrency, and race conditions.
 - **Explicit contracts**: APIs, schemas, events are contracts; default to backward compatibility.
 - **Invariants are first-class**: state them explicitly; enforce them in code + storage; test them.
@@ -166,3 +167,6 @@ Read `./references/python-best-practices.md` first for every backend/data task. 
 - Unbounded list endpoints or unbounded DB queries in production paths.
 - Backfills without throttling, isolation, and validation.
 - Logging secrets/PII or leaking internal stack traces to clients.
+- Premature abstraction: generic frameworks, plugin systems, or strategy patterns for code with one concrete use case.
+- Speculative infrastructure: adding caching, message queues, or event sourcing without measured need.
+- Over-engineering configuration: making everything configurable when only one value will ever be used.

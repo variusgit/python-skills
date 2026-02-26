@@ -97,6 +97,53 @@ Rules:
 - Prefer clarity over cleverness.
 - Python code should be readable, explicit, and follow the principle of least surprise.
 
+## 5a. Simplicity and YAGNI
+
+Before adding abstraction, indirection, or infrastructure, answer: **is there a second use case today?** If no — inline it, keep it direct, revisit when the need is real.
+
+### Start simple, harden when justified
+
+| Instead of... | Start with... | Upgrade when... |
+|---|---|---|
+| Class with strategy pattern | Plain function | A second variant appears |
+| Package with `__init__` re-exports | Single module | Module exceeds ~300 lines or has distinct sub-domains |
+| Event/message bus | Direct function call | A second consumer needs the same trigger |
+| Microservice | Endpoint in existing service | Independent scaling/deployment is required |
+| Metrics pipeline | `logging.info` with structured fields | Operational pain demands dashboards/alerts |
+| Config server / feature flag service | Environment variables | Runtime reconfiguration is a real requirement |
+| Cache layer (Redis) | Direct DB query | Measured latency proves caching is needed |
+
+### Code example: simple vs over-engineered
+
+```python
+# Over-engineered: abstract factory for one notifier
+class NotifierFactory:
+    _registry: dict[str, type[Notifier]] = {}
+
+    @classmethod
+    def register(cls, name: str, notifier_cls: type[Notifier]):
+        cls._registry[name] = notifier_cls
+
+    @classmethod
+    def create(cls, name: str) -> Notifier:
+        return cls._registry[name]()
+
+# Simple: just a function — refactor to factory when a second notifier appears
+def notify_user(user_id: int, message: str) -> None:
+    send_email(user_id, message)
+```
+
+### When to harden (YAGNI does not mean YOLO)
+
+YAGNI applies to **abstraction and infrastructure**, not to **correctness and safety**. These are always required:
+
+- **Idempotency** for retried writes (API, consumers, Airflow tasks) — prevents data corruption.
+- **Input validation** at trust boundaries — prevents injection and garbage propagation.
+- **Explicit error handling** — prevents silent data loss.
+- **Timeouts and bounded retries** on external calls — prevents cascade failures.
+
+The trigger for adding complexity: **observed production pain or a concrete second use case** — not speculation.
+
 ## 6. Error Handling
 - Never use bare `except`.
 - Catch specific exceptions only.
@@ -156,6 +203,51 @@ except:
 - Optimize only after correctness is ensured and bottlenecks are identified.
 - Make batch transforms deterministic; document dedup keys and tie-breakers.
 - Prefer replayable storage layouts (partitioned, append-only where feasible).
+
+## 9a. Concurrency Patterns
+
+### When to use what
+
+| Workload | Tool | Why |
+|---|---|---|
+| I/O-bound, async service (FastAPI/aiohttp) | `asyncio` | Already in the stack; native coroutine support |
+| I/O-bound, batch/script | `asyncio.gather` or `concurrent.futures.ThreadPoolExecutor` | Parallel HTTP/DB calls without async framework |
+| CPU-bound, moderate | `concurrent.futures.ProcessPoolExecutor` | Bypasses GIL; simple API |
+| CPU-bound, large-scale | PySpark | Already in the stack; distributed processing |
+| CPU work inside async handler | `loop.run_in_executor` | Offloads blocking code without stalling the event loop |
+
+**GIL awareness**: Python threads share the GIL — they help only for I/O waits (network, disk), not CPU parallelism. For CPU-bound work, use processes (`ProcessPoolExecutor`) or PySpark.
+
+### Essential patterns
+
+```python
+import asyncio
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+
+# Structured concurrency (Python 3.11+) — preferred over bare gather
+async def fetch_all(urls: list[str]) -> list[Response]:
+    async with asyncio.TaskGroup() as tg:
+        tasks = [tg.create_task(fetch(url)) for url in urls]
+    return [t.result() for t in tasks]
+
+# Thread pool for blocking I/O in scripts
+def download_batch(urls: list[str]) -> list[bytes]:
+    with ThreadPoolExecutor(max_workers=10) as pool:
+        return list(pool.map(download, urls))
+
+# CPU work inside an async handler
+async def handle_request(data: bytes) -> Result:
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(None, cpu_heavy_parse, data)
+```
+
+### Safety rules
+
+- Never share mutable state between tasks/threads without synchronization.
+- Always bound concurrency: use semaphores (`asyncio.Semaphore`) or fixed pool sizes.
+- Always handle cancellation: catch `asyncio.CancelledError`, clean up resources.
+- Prefer immutable data for cross-task/thread communication.
+- Set timeouts on `asyncio.wait_for` and pool operations to prevent hangs.
 
 ## 10. Time Semantics
 - Prefer timezone-aware datetimes.
