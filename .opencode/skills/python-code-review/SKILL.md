@@ -52,6 +52,10 @@ Before evaluating anything:
 
 Do not start evaluating until you understand the intent and scope.
 
+5. Calibrate review depth to scope:
+   - **Standard** (single-service, straightforward change): focus passes 2-4 and 7-8. Evaluate passes 5-6 proportionally — don't demand circuit breakers, correlation IDs, or runbook notes for a simple endpoint.
+   - **Complex** (distributed, multi-service, migration, high-risk data): all passes at full depth.
+
 ### Pass 2: Correctness and contracts
 
 The highest-priority pass. Bugs here cause incidents.
@@ -250,6 +254,7 @@ Group findings by severity (blockers first). End with a summary:
 - **Assuming tests pass = correct**: tests validate what they test; review validates what they don't.
 - **Ignoring what's NOT in the diff**: callers, consumers, and downstream effects of the change.
 - **Style wars**: arguing formatting when linters handle it.
+- **Disproportionate rigor**: demanding distributed-system patterns (circuit breakers, saga orchestration, correlation IDs, graceful shutdown) for simple single-service changes. Calibrate review depth to system complexity.
 
 ## Reference routing (progressive disclosure)
 

@@ -25,7 +25,10 @@ Do not use this skill for front-end-only testing or non-Python test frameworks.
 
 ## Agent workflow
 
-1. **Classify the code under test** — domain logic / API endpoint / DB operation / Airflow DAG / data pipeline / ML workload / messaging handler / service lifecycle.
+1. **Classify the code under test**
+   - Type: domain logic / API endpoint / DB operation / Airflow DAG / data pipeline / ML workload / messaging handler / service lifecycle.
+   - Scope: **standard** (single domain, straightforward I/O) / **complex** (multi-domain, distributed, high-risk data).
+   - For standard scope: focus on unit tests and basic integration; skip patterns for domains the code does not touch.
 2. **Choose test type(s)** using the test pyramid and the decision framework (load domain-specific reference for domain code).
 3. **Apply determinism rules** (non-negotiable).
 4. **Write tests** using the appropriate pytest patterns from this skill or domain reference.
@@ -75,6 +78,10 @@ TDD applies to business logic, domain rules, and data transformations. For thin 
 - **Critical paths**: 100% where failures have high impact (money, safety, data loss, security).
 - Coverage targets do **not** justify meaningless tests for thin wiring, framework glue, or generated code.
 - Optimize for defect prevention, not coverage numbers.
+
+### Proportionality
+
+Match testing depth to code complexity. A pure function needs a unit test, not a containerized integration suite. Test what the code actually does — don't test for patterns the code doesn't use (messaging, lifecycle, pipelines) just because the checklist mentions them.
 
 ## pytest patterns (essential)
 
@@ -316,14 +323,20 @@ Load when writing or reviewing tests and you need specific pytest recipes (advan
 
 ## Checklist
 
-- Unit tests cover core invariants, idempotency paths, and boundary conditions.
-- Integration tests cover DB/transaction/migration risks where applicable.
-- Contract tests protect API/event compatibility when boundaries change.
-- DAG parse/structure tests are present for Airflow repositories.
-- Messaging tests cover serialization, handler idempotency, DLQ routing, and schema compatibility.
-- Service lifecycle tests cover health endpoints, startup/shutdown hooks, and graceful drain.
+### Always
+
+- Unit tests cover core invariants, boundary conditions, and error paths.
 - CI gates run lint, type-check, and deterministic pytest suites.
 - No flaky tests in the suite; determinism rules are enforced.
+
+### When the code touches these domains
+
+- **DB/persistence**: integration tests cover transaction/migration risks.
+- **API contracts**: contract tests protect compatibility when boundaries change.
+- **Airflow**: DAG parse/structure tests are present.
+- **Messaging**: tests cover serialization, handler idempotency, DLQ routing, and schema compatibility.
+- **Service lifecycle**: tests cover health endpoints, startup/shutdown hooks, and graceful drain.
+- **ML**: tests cover feature computation, training reproducibility, serving contracts.
 
 ## Failure modes
 
