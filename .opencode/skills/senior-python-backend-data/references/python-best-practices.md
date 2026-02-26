@@ -144,6 +144,34 @@ YAGNI applies to **abstraction and infrastructure**, not to **correctness and sa
 
 The trigger for adding complexity: **observed production pain or a concrete second use case** — not speculation.
 
+## 5b. Design Principles (SOLID, DRY, KISS)
+
+These principles guide structural decisions. They are already demonstrated throughout this document — this section names them explicitly so you can reference them in code reviews, ADRs, and refactoring rationale.
+
+| Principle | One-line rule | Where it appears in this guide |
+|---|---|---|
+| **SRP** (Single Responsibility) | A module/class/function has one reason to change | Section 4: layer separation (domain / I/O / orchestration) |
+| **OCP** (Open/Closed) | Extend behavior without modifying existing code | Section 5a: add a second variant, don't modify the original |
+| **LSP** (Liskov Substitution) | Subtypes must honor the contract of their parent | Section 2: `Protocol` for interface behavior |
+| **ISP** (Interface Segregation) | Don't force clients to depend on methods they don't use | Section 4: thin handlers, injectable dependencies |
+| **DIP** (Dependency Inversion) | Depend on abstractions, not concretions | Section 4: injectable I/O dependencies, functional core / imperative shell |
+| **DRY** (Don't Repeat Yourself) | Extract shared logic only when duplication is proven (3+ occurrences) | Section 5a: YAGNI balances premature DRY |
+| **KISS** (Keep It Simple) | Prefer the simplest solution that satisfies requirements | Section 5a: "start simple, harden when justified" table |
+
+### Smell-to-principle mapping
+
+| Code smell | Principle violated |
+|---|---|
+| God class / module doing everything | SRP |
+| Modifying existing code to add every new variant | OCP |
+| Subclass that breaks parent's contract or raises unexpected errors | LSP |
+| Interface with methods that most implementors stub out | ISP |
+| Domain logic importing `fastapi`, `psycopg`, or `boto3` directly | DIP |
+| Copy-pasted blocks with minor differences (3+ occurrences) | DRY |
+| Abstract factory for one implementation, generic framework for one use case | KISS / YAGNI |
+
+Use these names when justifying decisions: "extracting this violates YAGNI — there's one use case" or "this God module violates SRP — split by domain boundary."
+
 ## 6. Error Handling
 - Never use bare `except`.
 - Catch specific exceptions only.
@@ -597,7 +625,36 @@ from mypackage.utils import format_name
 # Good: Use isort or Ruff for automatic import sorting
 ```
 
-## 18. Final Principle
+## 18. Dockerfile Conventions
+
+### Base image and structure
+
+- Use `python:3.x-slim` as the default base. Avoid `alpine` unless the team has validated C-extension compatibility.
+- Use **multi-stage builds**: a builder stage installs dependencies, a runtime stage copies only the installed packages and application code.
+- Run as a **non-root user** in the runtime stage (`RUN adduser --system app && USER app`).
+
+### Layer caching
+
+- Copy dependency files (`pyproject.toml`, `requirements.txt`, lock files) and install dependencies **before** copying application code. This ensures dependency layers are cached across builds when only code changes.
+- Place frequently changing instructions (`COPY . .`) last.
+
+### Security and hygiene
+
+- **`.dockerignore`** is mandatory. Exclude `.git`, `__pycache__`, `.env`, `tests/`, `*.pyc`, `.venv/`, and IDE config.
+- Never pass secrets via `ARG` or `ENV` in the Dockerfile. Use runtime secret injection (env vars, mounted files, secret managers).
+- Pin base image versions to a specific minor (e.g., `python:3.11-slim`), not `latest`.
+
+### Health checks
+
+- Add `HEALTHCHECK` instruction pointing to the service's liveness endpoint (e.g., `HEALTHCHECK CMD curl -f http://localhost:8000/health/live || exit 1`).
+
+### docker-compose
+
+- Use `docker-compose.yaml` for local development: service + dependencies (DB, Redis, broker).
+- Keep production deployment config (K8s manifests, Helm charts) separate — outside this skill's scope.
+- Define environment variables in `.env.example`; reference them in compose via `env_file`.
+
+## 19. Final Principle
 Readable, typed, testable, and explicit code is more valuable than clever code.
 Production Python should be predictable, observable, and easy to maintain.
 
@@ -608,6 +665,7 @@ Production Python should be predictable, observable, and easy to maintain.
 - Business logic is separated from I/O and orchestration.
 - External calls are timeout-bounded, retry-safe, and observable.
 - Secrets/PII are not present in code, logs, or committed artifacts.
+- Dockerfiles use multi-stage builds, non-root user, `.dockerignore`, and pinned base images.
 
 ## Failure modes
 

@@ -271,6 +271,16 @@ async def main():
 
 ## API contracts
 
+### REST conventions
+
+Follow standard HTTP semantics — the agent already knows CRUD mechanics; these conventions ensure consistency:
+
+- **Resource naming**: plural nouns (`/users`, `/orders`), not verbs. Nested resources for clear ownership (`/users/{id}/orders`).
+- **HTTP methods**: `GET` (read, safe, cacheable), `POST` (create), `PUT`/`PATCH` (full/partial update), `DELETE` (remove).
+- **Status codes**: `200` success, `201` created, `204` no content (delete), `400` bad request, `404` not found, `409` conflict, `422` validation error, `500` internal error.
+- **Consistent response shapes**: single resource returns the object; list endpoint returns `{"items": [...], "next_cursor": ...}`; errors return the error model (see below).
+- Keep endpoints thin — delegate to service/domain layer; the handler validates input, calls business logic, shapes output.
+
 ### Request/response contracts
 
 - Validate inputs early; reject invalid data with clear errors.

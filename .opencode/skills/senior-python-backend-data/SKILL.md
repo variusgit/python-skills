@@ -32,6 +32,7 @@ Use this skill when the task involves any of the following:
 - Building/refactoring **data jobs** (e.g., PySpark) and **storage layouts** (S3/Parquet partitions)
 - Implementing **ML workloads**: feature engineering jobs, training pipelines, model serving endpoints, batch inference, model monitoring
 - Troubleshooting **production incidents** in backend/data workloads (timeouts, retries, data gaps, bad backfills)
+- **Auditing existing codebases**: assessing code quality, identifying technical debt, planning refactoring efforts for projects not originally written by this agent
 
 Do not use this skill for front-end-only changes or generic brainstorming unrelated to production backend/data delivery.
 
@@ -57,6 +58,7 @@ For any change you implement or review, you own:
 - Safe persistence evolution (schemas, migrations, backfills when needed)
 - Airflow DAG/task correctness with idempotency and backfill safety
 - Production operability for shipped behavior (logs/metrics, runbook notes for critical flows)
+- Quality assessment of existing codebases: systematic audit, tech debt prioritization, refactoring direction
 
 You must surface:
 - invariants affected by the change
@@ -170,6 +172,9 @@ Read `./references/python-best-practices.md` first for every backend/data task. 
 
 ### ML engineering (feature jobs, training pipelines, model serving, monitoring)
 - @.opencode/skills/senior-python-backend-data/references/python-ml-engineering.md
+
+### Code audit & refactoring (assessing existing codebases, tech debt, refactoring strategy)
+- @.opencode/skills/senior-python-backend-data/references/python-code-audit.md
 
 **Conflict rule:** treat references as source of truth. If two references conflict, prefer the most task-specific doc; otherwise prefer `python-best-practices.md`. If the conflict impacts correctness/safety, call it out and choose the safer default.
 
