@@ -408,6 +408,27 @@ myproject/
 - `dags/libs/` — shared helpers and variables imported by DAGs.
 - `dags/resources/` — templates, SQL files, and other static assets used by tasks.
 
+#### Minimal service (single module, no layered split)
+
+Use when the service has fewer than ~300 lines of logic, no complex persistence, and no inter-service communication. Upgrade to the layered layout when any of these conditions changes.
+
+```
+myproject/
+├── src/
+│   └── mypackage/
+│       ├── __init__.py
+│       ├── __main__.py
+│       └── app.py          # routes, models, logic in one module
+├── tests/
+│   ├── conftest.py
+│   └── test_app.py
+├── pyproject.toml
+├── README.md
+└── .gitignore
+```
+
+`app.py` contains everything: FastAPI app, Pydantic models, route handlers, and business logic. When the module grows beyond ~300 lines or needs distinct layers (storage, domain, API), refactor into the layered structure below.
+
 #### Python CLI + K8s REST
 
 ```

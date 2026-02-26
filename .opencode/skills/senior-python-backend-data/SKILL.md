@@ -76,7 +76,9 @@ You must surface:
 ## How to work (agent workflow)
 
 1. **Classify the task**
-   - API / DB & migrations / Airflow / data job & storage / messaging async
+   - Domain: API / DB & migrations / Airflow / data job & storage / messaging async
+   - Scale: **small** (few endpoints, no DB or single table, no async, no inter-service) / **standard** (multiple domains, persistence, external integrations) / **complex** (distributed, multi-service, migration-heavy, high-risk data)
+   - For **small** tasks: apply the lightweight checklist (see below); skip rollout/migration/backfill sections in output
 2. **Identify invariants and risks**
    - data loss/corruption, downtime, backfill blast radius, security/PII, cost/performance regression
 3. **Load only the relevant reference docs** (see “Reference routing”)
@@ -106,6 +108,8 @@ When responding, prefer this structure (omit irrelevant sections):
 
 ## Definition of done (must satisfy)
 
+**For standard and complex tasks.** Small tasks use the lightweight checklist below.
+
 - **Correctness**: invariants enforced; idempotent semantics where needed; explicit failure modes.
 - **Maintainability**: clear module boundaries; readable naming; minimal “magic”.
 - **Testability**: domain logic is separable and injectable; integration boundaries are explicit.
@@ -113,6 +117,17 @@ When responding, prefer this structure (omit irrelevant sections):
 - **Security**: secrets/PII protected; least privilege; safe input handling.
 - **Operations**: timeouts/retries configured; backfill safety controls; runbook notes for critical flows.
 - **Verified**: `ruff`, `basedpyright`, and `pytest` pass with zero errors after every change.
+
+### Lightweight checklist (small tasks)
+
+For small-scope tasks (simple endpoints, scripts, CLI tools, single-module services without complex persistence or inter-service communication):
+
+- **Correctness**: input validated; errors explicit; edge cases handled.
+- **Maintainability**: readable; typed; no dead code.
+- **Testability**: logic is testable without mocking infrastructure.
+- **Verified**: `ruff`, `basedpyright`, and `pytest` pass.
+
+Skip for small tasks: runbook notes, backfill safety, idempotency analysis, structured metrics, graceful shutdown, pagination enforcement. Upgrade to full "Definition of done" when the service grows beyond this scope.
 
 ## Mini-ADR trigger (decision record)
 

@@ -428,16 +428,26 @@ async def get_order(order_id: str):
 
 ## Checklist
 
+### Always (any service)
+
 - Framework chosen with clear rationale (FastAPI / aiohttp / gRPC).
-- Service follows layered architecture (api / core / models / storage).
-- Handlers are thin; business logic is in models layer.
 - API contracts are explicit (input/output/error models).
-- Contracts are backward compatible; breaking changes are versioned.
+- Handlers are thin; business logic is separated from HTTP layer.
+- Healthcheck endpoint is implemented (`/health/live`).
+
+### When the service has persistence or external integrations
+
 - Write paths are idempotent where retries are possible.
+- Inter-service calls have timeouts and retries.
+- Contracts are backward compatible; breaking changes are versioned.
+
+### When the service is production-critical or long-running
+
+- Service follows layered architecture (api / core / models / storage).
 - Pagination and list limits are enforced.
-- Healthcheck and readiness endpoints are implemented.
+- Readiness endpoint is implemented (`/health/ready`).
 - Graceful shutdown handles drain and resource cleanup.
-- Inter-service calls have timeouts, retries, and correlation IDs.
+- Correlation IDs propagated across service boundaries.
 - Logs/metrics are sufficient to debug issues at the edge.
 
 ## Failure modes
