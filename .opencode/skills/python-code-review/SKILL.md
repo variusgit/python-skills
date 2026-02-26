@@ -50,7 +50,7 @@ Before evaluating anything:
 3. Determine the change type: new feature / refactor / bugfix / migration / config change / dependency update.
 4. Note what is NOT changed but might be affected (callers, consumers, downstream).
 
-Do not start evaluating until you understand the intent and scope.
+Do not start evaluating until you understand the intent and scope. If intent is unclear or a pattern looks deliberately unconventional, ask the author rather than assuming it's a mistake.
 
 5. Calibrate review depth to scope:
    - **Standard** (single-service, straightforward change): focus passes 2-4 and 7-8. Evaluate passes 5-6 proportionally — don't demand circuit breakers, correlation IDs, or runbook notes for a simple endpoint.

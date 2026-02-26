@@ -29,6 +29,7 @@ Do not use this skill for front-end-only testing or non-Python test frameworks.
    - Type: domain logic / API endpoint / DB operation / Airflow DAG / data pipeline / ML workload / messaging handler / service lifecycle.
    - Scope: **standard** (single domain, straightforward I/O) / **complex** (multi-domain, distributed, high-risk data).
    - For standard scope: focus on unit tests and basic integration; skip patterns for domains the code does not touch.
+   - If the testing approach is ambiguous (e.g., unclear whether integration tests need real infrastructure, or whether a behavior is intentional), ask rather than assume.
 2. **Choose test type(s)** using the test pyramid and the decision framework (load domain-specific reference for domain code).
 3. **Apply determinism rules** (non-negotiable).
 4. **Write tests** using the appropriate pytest patterns from this skill or domain reference.
