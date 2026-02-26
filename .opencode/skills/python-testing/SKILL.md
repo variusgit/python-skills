@@ -1,11 +1,11 @@
 ---
 name: python-testing
-description: Production-grade Python testing — TDD workflow, test pyramid, determinism rules, pytest patterns (fixtures, mocking, parametrize, async), Airflow DAG tests, data pipeline validation, contract tests, and CI quality gates. Use when writing, reviewing, stabilizing, or designing tests for any Python backend/data code.
+description: Production-grade Python testing — TDD workflow, test pyramid, determinism rules, pytest patterns (fixtures, mocking, parametrize, async), domain-specific testing (DB, Airflow, data pipelines, ML, messaging, service lifecycle), contract tests, and CI quality gates. Use when writing, reviewing, stabilizing, or designing tests for any Python backend/data code.
 compatibility: opencode
 metadata:
   audience: "senior"
   language: "python"
-  domains: "testing,backend,data-engineering,airflow"
+  domains: "testing,backend,data-engineering,airflow,messaging,ml"
   primary_tools: "pytest,ruff,basedpyright"
 ---
 
@@ -16,7 +16,7 @@ This is a **task skill** for a dedicated testing agent: it defines *how to decid
 ## When to use
 
 - Writing new Python code (follow TDD for non-trivial logic).
-- Adding or changing API, DB, Airflow, or pipeline contracts.
+- Adding or changing API, DB, Airflow, pipeline, messaging, or service lifecycle contracts.
 - Reviewing or stabilizing existing test suites (flaky, slow, brittle).
 - Designing test strategy for a new module or service.
 - Defining or updating CI quality gates.
@@ -25,10 +25,10 @@ Do not use this skill for front-end-only testing or non-Python test frameworks.
 
 ## Agent workflow
 
-1. **Classify the code under test** — domain logic / API endpoint / DB operation / Airflow DAG / data pipeline / async handler.
-2. **Choose test type(s)** using the test pyramid and the decision framework below.
+1. **Classify the code under test** — domain logic / API endpoint / DB operation / Airflow DAG / data pipeline / ML workload / messaging handler / service lifecycle.
+2. **Choose test type(s)** using the test pyramid and the decision framework (load domain-specific reference for domain code).
 3. **Apply determinism rules** (non-negotiable).
-4. **Write tests** using the appropriate pytest patterns from this skill.
+4. **Write tests** using the appropriate pytest patterns from this skill or domain reference.
 5. **Validate** — run lint + type-check + pytest; confirm determinism and isolation.
 6. **Close the loop** — update checklist, flag any uncovered invariants or risks.
 
@@ -75,223 +75,6 @@ TDD applies to business logic, domain rules, and data transformations. For thin 
 - **Critical paths**: 100% where failures have high impact (money, safety, data loss, security).
 - Coverage targets do **not** justify meaningless tests for thin wiring, framework glue, or generated code.
 - Optimize for defect prevention, not coverage numbers.
-
-## What to test (decision framework)
-
-### Unit tests — what to test
-
-- Invariants (success + failure cases).
-- State transitions and business rules.
-- Idempotency behavior (same input twice → same persisted effect).
-- Boundary validation and normalization (types, time zones, precision).
-- Edge cases: empty inputs, None values, boundary conditions.
-
-### Unit tests — what NOT to test
-
-- Third-party libraries (trust them to work).
-- Framework wiring with no custom logic.
-- One-off glue code with no branching (prefer integration tests).
-
-### Integration tests — when to use
-
-- SQL queries are non-trivial.
-- Transaction boundaries matter.
-- Uniqueness/locking/concurrency behavior matters.
-- Migrations or backfills are risky.
-
-#### DB integration (PostgreSQL)
-
-- Use ephemeral Postgres (container) in CI.
-- Apply migrations in test setup.
-- Validate constraints and indexes for critical queries.
-- Test both "happy path" and expected constraint violations.
-
-```python
-@pytest.fixture
-def db_session():
-    session = Session(bind=engine)
-    session.begin_nested()
-    yield session
-    session.rollback()
-    session.close()
-
-def test_unique_constraint_prevents_duplicate_orders(db_session):
-    order = Order(idempotency_key="abc-123", amount=100)
-    db_session.add(order)
-    db_session.flush()
-
-    duplicate = Order(idempotency_key="abc-123", amount=200)
-    db_session.add(duplicate)
-    with pytest.raises(IntegrityError):
-        db_session.flush()
-```
-
-### Contract tests — when to add
-
-- API response shape changes.
-- Error codes or semantics change.
-- Event schema changes (producer/consumer compatibility).
-
-Contracts should be machine-checkable: JSON schema / OpenAPI snapshots, schema versioning rules, compatibility test suites.
-
-### Airflow testing
-
-#### 1) DAG import/parse tests (must-have)
-
-DAG modules must be importable with **no I/O**.
-
-```python
-from airflow.models import DagBag
-
-@pytest.fixture
-def dagbag():
-    return DagBag(dag_folder="dags/", include_examples=False)
-
-def test_no_import_errors(dagbag):
-    assert len(dagbag.import_errors) == 0, f"DAG import errors: {dagbag.import_errors}"
-
-def test_expected_dags_present(dagbag):
-    expected = {"etl_customers", "etl_orders", "ml_training"}
-    assert expected.issubset(dagbag.dag_ids)
-```
-
-#### 2) DAG structure tests
-
-Validate: schedule/dataset triggers, default_args (retries/timeouts), task IDs, dependencies, pools/queues for expensive tasks, and graph integrity.
-
-```python
-def test_dag_structure(dagbag):
-    dag = dagbag.get_dag("etl_customers")
-    assert dag is not None
-    assert dag.schedule_interval == "0 6 * * *"
-    assert dag.default_args.get("retries", 0) >= 1
-    assert {"extract", "transform", "load"}.issubset({t.task_id for t in dag.tasks})
-
-def test_task_dependencies(dagbag):
-    dag = dagbag.get_dag("etl_customers")
-    extract = dag.get_task("extract")
-    assert "transform" in [t.task_id for t in extract.downstream_list]
-
-def test_no_dag_cycles(dagbag):
-    for dag_id, dag in dagbag.dags.items():
-        assert dag.test_cycle() is None, f"Cycle detected in {dag_id}"
-```
-
-#### 3) Task/business logic tests
-
-Keep business logic **out of DAG files** — put it in importable modules under `dags/libs/`, unit test it separately, and in DAG tests only validate wiring and config.
-
-```python
-from dags.libs.customers import transform_customers
-
-def test_transform_customers_drops_nulls():
-    raw = [{"id": 1, "name": "Alice"}, {"id": 2, "name": None}]
-    result = transform_customers(raw)
-    assert len(result) == 1
-    assert result[0]["name"] == "Alice"
-```
-
-#### 4) Operator/Sensor tests (as needed)
-
-For custom operators/sensors: unit test input validation and result interpretation; integration test with a stubbed backend where meaningful.
-
-### Data pipeline testing (batch jobs)
-
-- Unit tests for transformations (small in-memory dataframes/samples).
-- Validation tests for **schema + constraints** (nullability, uniqueness, ranges).
-- For incremental loads, test watermark logic and partition selection.
-- For deduplication, test keys and tie-breaking rules.
-
-### ML workload testing
-
-#### 1) Feature computation tests
-
-Validate point-in-time correctness and feature determinism.
-
-```python
-def test_feature_computation_excludes_future_data():
-    events = [
-        {"user_id": 1, "event_time": "2025-01-10", "amount": 100},
-        {"user_id": 1, "event_time": "2025-01-20", "amount": 200},  # future
-    ]
-    features = compute_features(events, feature_date="2025-01-15")
-    assert features[0]["total_amount"] == 100  # only pre-cutoff events
-
-def test_feature_computation_is_deterministic():
-    result1 = compute_features(sample_events, feature_date="2025-01-15")
-    result2 = compute_features(sample_events, feature_date="2025-01-15")
-    assert result1 == result2
-
-def test_feature_schema_matches_expected():
-    features = compute_features(sample_events, feature_date="2025-01-15")
-    for f in features:
-        UserFeatures(**f)  # Pydantic validation
-```
-
-#### 2) Training reproducibility tests
-
-```python
-def test_training_is_reproducible():
-    metrics1 = train_model(data_path=FIXTURE_DATA, params={"seed": 42})
-    metrics2 = train_model(data_path=FIXTURE_DATA, params={"seed": 42})
-    assert metrics1["f1"] == pytest.approx(metrics2["f1"], abs=1e-6)
-
-def test_model_evaluation_against_baseline():
-    metrics = train_model(data_path=FIXTURE_DATA, params=DEFAULT_PARAMS)
-    assert metrics["f1"] >= 0.7, "Model performance below acceptable threshold"
-```
-
-#### 3) Model serving tests
-
-```python
-def test_prediction_endpoint_returns_valid_response(client):
-    response = client.post("/predict", json={
-        "user_id": 1,
-        "features": {"event_count": 10, "total_amount": 500.0},
-    })
-    assert response.status_code == 200
-    data = response.json()
-    assert "prediction" in data
-    assert "model_version" in data
-    assert isinstance(data["prediction"], float)
-
-def test_prediction_rejects_invalid_features(client):
-    response = client.post("/predict", json={
-        "user_id": 1,
-        "features": {},  # missing required features
-    })
-    assert response.status_code == 422
-```
-
-#### 4) Batch inference tests
-
-```python
-def test_batch_predictions_have_no_nulls(spark):
-    predictions = run_batch_inference(spark, model_path=MODEL_FIXTURE, input_path=INPUT_FIXTURE)
-    null_count = predictions.filter(F.col("prediction").isNull()).count()
-    assert null_count == 0
-
-def test_batch_prediction_count_matches_input(spark):
-    input_df = spark.read.parquet(INPUT_FIXTURE)
-    predictions = run_batch_inference(spark, model_path=MODEL_FIXTURE, input_path=INPUT_FIXTURE)
-    assert predictions.count() == input_df.count()
-```
-
-#### 5) Monitoring and drift tests
-
-```python
-def test_drift_detection_flags_shifted_distribution():
-    reference = np.random.normal(0, 1, 1000)
-    shifted = np.random.normal(2, 1, 1000)  # clear drift
-    results = compute_drift_metrics(reference, shifted, ["feature_a"])
-    assert results["feature_a"]["drifted"] is True
-
-def test_drift_detection_passes_stable_distribution():
-    reference = np.random.normal(0, 1, 1000)
-    stable = np.random.normal(0, 1, 1000)
-    results = compute_drift_metrics(reference, stable, ["feature_a"])
-    assert results["feature_a"]["drifted"] is False
-```
 
 ## pytest patterns (essential)
 
@@ -496,7 +279,12 @@ markers = [
 
 ## Reference routing
 
-This skill stays focused on **what to test** and **testing strategy**. For detailed pytest mechanics, load the reference below.
+This skill covers testing strategy, essential pytest patterns, and CI standards. Domain-specific recipes and advanced pytest mechanics live in dedicated references.
+
+### Domain-specific testing patterns (DB, Airflow, data pipelines, ML, messaging, service lifecycle)
+- @.opencode/skills/python-testing/references/python-domain-testing-patterns.md
+
+Load when the code under test touches a specific domain — what to test, fixture patterns, and integration test recipes for each domain.
 
 ### Detailed pytest patterns (fixtures, mocking, assertions, async, CLI)
 - @.opencode/skills/python-testing/references/python-pytest-patterns.md
@@ -532,6 +320,8 @@ Load when writing or reviewing tests and you need specific pytest recipes (advan
 - Integration tests cover DB/transaction/migration risks where applicable.
 - Contract tests protect API/event compatibility when boundaries change.
 - DAG parse/structure tests are present for Airflow repositories.
+- Messaging tests cover serialization, handler idempotency, DLQ routing, and schema compatibility.
+- Service lifecycle tests cover health endpoints, startup/shutdown hooks, and graceful drain.
 - CI gates run lint, type-check, and deterministic pytest suites.
 - No flaky tests in the suite; determinism rules are enforced.
 
