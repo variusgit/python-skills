@@ -338,6 +338,64 @@ def handle_order(order_data):
 
 ---
 
+## ML engineering
+
+### Correct pattern characteristics
+
+- Feature computation enforces point-in-time correctness: features reflect state as of label timestamp, not current state.
+- Same feature computation logic used in training (PySpark) and serving (Python) — no training-serving skew.
+- Training is reproducible: random seeds set, ML library versions pinned, data versioned (path includes date/snapshot).
+- Experiment tracking logs parameters, metrics, artifacts, and data lineage per run.
+- New model is evaluated against production baseline before promotion; promotion criteria are explicit.
+- Model loaded once at startup (lifespan), not per request.
+- Batch inference uses `pandas_udf` (vectorized), not row-level Python UDF.
+- Model monitoring checks feature drift and prediction distribution shift on a schedule.
+- Feature versions are immutable — new computation logic creates a new version path, not an overwrite.
+
+### Red flags
+
+| Finding | Severity | Why |
+|---------|----------|-----|
+| Features joined without point-in-time filter (`feature_date <= label_date`) | **blocker** | Data leakage — model uses future information, inflates offline metrics, fails in production |
+| Training-serving skew: different feature computation in training vs serving | **blocker** | Silent accuracy loss — model sees different inputs in production than it was trained on |
+| No random seed in training code | **critical** | Non-reproducible training — re-run produces different model, cannot debug regressions |
+| Model loaded from S3/disk on every prediction request | **critical** | Latency explosion — seconds per request instead of milliseconds |
+| Row-level Python UDF for batch prediction instead of `pandas_udf` | **critical** | 10-100x slowdown — disables vectorization and Spark optimization |
+| New model deployed without comparison to baseline | **critical** | Regression to production — no gate to catch worse model |
+| Feature version overwritten (same path, changed logic) | **critical** | Old models reference features computed with different logic — silent model degradation |
+| No experiment tracking (params, metrics, artifacts) | **major** | Cannot reproduce or compare training runs |
+| No model version in prediction response | **major** | Cannot trace predictions to specific model during incidents |
+| No feature drift monitoring | **major** | Model degrades silently as input distributions shift |
+| ML library versions not pinned | **major** | Training produces different results across environments or over time |
+| Prediction output not validated (nulls, range, distribution) | **major** | Corrupt predictions propagate to downstream consumers |
+
+### Anti-pattern recognition
+
+```python
+# RED FLAG: data leakage — no point-in-time filter
+training_data = labels.join(features, on="user_id")  # uses latest features, not as-of label_date
+
+# CORRECT: point-in-time join
+training_data = labels.join(
+    features,
+    on=(labels.user_id == features.user_id) & (features.feature_date <= labels.label_date),
+)
+
+# RED FLAG: model loaded per request
+@app.post("/predict")
+async def predict(request: PredictionRequest):
+    model = joblib.load("model.joblib")  # loaded on EVERY request
+    return model.predict(...)
+
+# CORRECT: model loaded at startup
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    app.state.model = joblib.load("model.joblib")
+    yield
+```
+
+---
+
 ## Severity quick reference (domain-specific)
 
 ### Blockers (must fix before merge)
@@ -349,6 +407,8 @@ def handle_order(order_data):
 - Append-without-dedup on retry-enabled data job
 - Non-idempotent consumer with at-least-once delivery
 - Breaking API change without versioning
+- Feature join without point-in-time filter (data leakage)
+- Training-serving skew (different feature computation in training vs serving)
 
 ### Critical (must fix before merge)
 
@@ -365,6 +425,11 @@ def handle_order(order_data):
 - No DLQ / poison-message handling
 - Event schema change without versioning
 - Backfill in single transaction without batching
+- No random seed in ML training code
+- Model loaded per request instead of at startup
+- Row-level Python UDF for batch prediction
+- New model deployed without baseline comparison
+- Feature version overwritten with changed logic
 
 ### Major (should fix before merge)
 
@@ -378,6 +443,11 @@ def handle_order(order_data):
 - UDF where built-in function exists
 - No pool/queue for resource-intensive Airflow tasks
 - Global ordering assumption in messaging
+- No experiment tracking for training runs
+- No model version in prediction response
+- No feature drift monitoring
+- ML library versions not pinned
+- Prediction output not validated
 
 ### Minor (fix or acknowledge)
 

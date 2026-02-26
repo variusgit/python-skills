@@ -202,6 +202,97 @@ For custom operators/sensors: unit test input validation and result interpretati
 - For incremental loads, test watermark logic and partition selection.
 - For deduplication, test keys and tie-breaking rules.
 
+### ML workload testing
+
+#### 1) Feature computation tests
+
+Validate point-in-time correctness and feature determinism.
+
+```python
+def test_feature_computation_excludes_future_data():
+    events = [
+        {"user_id": 1, "event_time": "2025-01-10", "amount": 100},
+        {"user_id": 1, "event_time": "2025-01-20", "amount": 200},  # future
+    ]
+    features = compute_features(events, feature_date="2025-01-15")
+    assert features[0]["total_amount"] == 100  # only pre-cutoff events
+
+def test_feature_computation_is_deterministic():
+    result1 = compute_features(sample_events, feature_date="2025-01-15")
+    result2 = compute_features(sample_events, feature_date="2025-01-15")
+    assert result1 == result2
+
+def test_feature_schema_matches_expected():
+    features = compute_features(sample_events, feature_date="2025-01-15")
+    for f in features:
+        UserFeatures(**f)  # Pydantic validation
+```
+
+#### 2) Training reproducibility tests
+
+```python
+def test_training_is_reproducible():
+    metrics1 = train_model(data_path=FIXTURE_DATA, params={"seed": 42})
+    metrics2 = train_model(data_path=FIXTURE_DATA, params={"seed": 42})
+    assert metrics1["f1"] == pytest.approx(metrics2["f1"], abs=1e-6)
+
+def test_model_evaluation_against_baseline():
+    metrics = train_model(data_path=FIXTURE_DATA, params=DEFAULT_PARAMS)
+    assert metrics["f1"] >= 0.7, "Model performance below acceptable threshold"
+```
+
+#### 3) Model serving tests
+
+```python
+def test_prediction_endpoint_returns_valid_response(client):
+    response = client.post("/predict", json={
+        "user_id": 1,
+        "features": {"event_count": 10, "total_amount": 500.0},
+    })
+    assert response.status_code == 200
+    data = response.json()
+    assert "prediction" in data
+    assert "model_version" in data
+    assert isinstance(data["prediction"], float)
+
+def test_prediction_rejects_invalid_features(client):
+    response = client.post("/predict", json={
+        "user_id": 1,
+        "features": {},  # missing required features
+    })
+    assert response.status_code == 422
+```
+
+#### 4) Batch inference tests
+
+```python
+def test_batch_predictions_have_no_nulls(spark):
+    predictions = run_batch_inference(spark, model_path=MODEL_FIXTURE, input_path=INPUT_FIXTURE)
+    null_count = predictions.filter(F.col("prediction").isNull()).count()
+    assert null_count == 0
+
+def test_batch_prediction_count_matches_input(spark):
+    input_df = spark.read.parquet(INPUT_FIXTURE)
+    predictions = run_batch_inference(spark, model_path=MODEL_FIXTURE, input_path=INPUT_FIXTURE)
+    assert predictions.count() == input_df.count()
+```
+
+#### 5) Monitoring and drift tests
+
+```python
+def test_drift_detection_flags_shifted_distribution():
+    reference = np.random.normal(0, 1, 1000)
+    shifted = np.random.normal(2, 1, 1000)  # clear drift
+    results = compute_drift_metrics(reference, shifted, ["feature_a"])
+    assert results["feature_a"]["drifted"] is True
+
+def test_drift_detection_passes_stable_distribution():
+    reference = np.random.normal(0, 1, 1000)
+    stable = np.random.normal(0, 1, 1000)
+    results = compute_drift_metrics(reference, stable, ["feature_a"])
+    assert results["feature_a"]["drifted"] is False
+```
+
 ## pytest patterns (essential)
 
 ### Fixtures
