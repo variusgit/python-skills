@@ -2,11 +2,6 @@
 name: python-testing
 description: Production-grade Python testing — TDD workflow, test pyramid, determinism rules, pytest patterns (fixtures, mocking, parametrize, async), domain-specific testing (DB, Airflow, data pipelines, ML, messaging, service lifecycle), contract tests, and CI quality gates. Use when writing, reviewing, stabilizing, or designing tests for any Python backend/data code.
 compatibility: opencode
-metadata:
-  audience: "senior"
-  language: "python"
-  domains: "testing,backend,data-engineering,airflow,messaging,ml"
-  primary_tools: "pytest,ruff,basedpyright"
 ---
 
 # Python Testing (Production-Grade)

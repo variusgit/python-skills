@@ -2,11 +2,6 @@
 name: senior-backend-data-architect
 description: Design production architectures for high-load backend systems, data platforms, and ML platforms — system decomposition, data modeling, bounded contexts, scalability patterns, trade-off analysis, and delivery planning. Use when designing new systems, evolving existing architectures, planning data/ML platforms, or making significant technical decisions.
 compatibility: opencode
-metadata:
-  audience: "senior"
-  language: "python"
-  domains: "architecture,backend,data-engineering,ml-platform"
-  primary_tools: "python,sql,airflow,pyspark"
 ---
 
 # Senior Backend & Data Architect (System Design Skill)

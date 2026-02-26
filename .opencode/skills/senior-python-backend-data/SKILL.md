@@ -2,11 +2,6 @@
 name: senior-python-backend-data
 description: Ship and review production Python backend + data workflow changes (APIs, PostgreSQL, Airflow, Spark/S3) with senior-level correctness and operability. Use for backend features/refactors, API contract changes, schema migrations, Airflow DAGs/backfills, data jobs/storage layouts, or production incident triage.
 compatibility: opencode
-metadata:
-  audience: "senior"
-  language: "python"
-  domains: "backend,data-engineering,orchestration"
-  primary_tools: "python,airflow,sql,ruff,basedpyright,pyspark"
 ---
 
 # Senior Python Backend/Data (Production Delivery Skill)

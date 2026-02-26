@@ -2,11 +2,6 @@
 name: python-code-review
 description: Senior-level Python code review for backend and data systems — systematic review of correctness, contracts, security, performance, reliability, observability, test adequacy, migration safety, and code quality. Use when reviewing PRs, pre-merge checks, or self-reviewing changes before shipping.
 compatibility: opencode
-metadata:
-  audience: "senior"
-  language: "python"
-  domains: "code-review,backend,data-engineering"
-  primary_tools: "python,sql,ruff,basedpyright"
 ---
 
 # Python Code Review (Senior-Level)
