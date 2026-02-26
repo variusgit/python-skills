@@ -256,12 +256,12 @@ Group findings by severity (blockers first). End with a summary:
 Load references to deepen evaluation accuracy. Do not load all at once — pick based on what the change touches.
 
 ### Production readiness criteria (load for any production-bound review)
-- @.opencode/skills/python-code-review/references/python-production-readiness-criteria.md
+- Read file: `.opencode/skills/python-code-review/references/python-production-readiness-criteria.md`
 
 Concrete red flags, correct pattern characteristics, and severity guidance for passes 5 (Reliability), 6 (Observability), and operational aspects of pass 8.
 
 ### Domain-specific review criteria (load when change touches DB, Airflow, APIs, data jobs, or messaging)
-- @.opencode/skills/python-code-review/references/python-review-domain-criteria.md
+- Read file: `.opencode/skills/python-code-review/references/python-review-domain-criteria.md`
 
 Concrete red flags, correct vs incorrect patterns, and severity guidance for passes 2 (Correctness) and domain-specific aspects of pass 8 — PostgreSQL persistence, API contracts, Airflow DAGs, data jobs/storage, and messaging.
 

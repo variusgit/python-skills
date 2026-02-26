@@ -97,18 +97,18 @@ The architect must ensure:
    - Decompose the domain into contexts with clear boundaries
    - Define data ownership per context
    - Define integration contracts between contexts
-   - Load `./references/arch-ddd-patterns.md` for complex domain decomposition
+   - Load `.opencode/skills/senior-backend-data-architect/references/arch-ddd-patterns.md` for complex domain decomposition
 
 4. **Design data models**
    - Choose modeling approach per use case (normalized OLTP, dimensional OLAP, etc.)
    - Choose storage engine per model (PostgreSQL, ClickHouse/Greenplum, S3/Parquet)
    - Define key invariants and enforcement mechanisms
-   - Load `./references/arch-data-modeling.md` for modeling guidance
+   - Load `.opencode/skills/senior-backend-data-architect/references/arch-data-modeling.md` for modeling guidance
 
 5. **Select architectural patterns**
-   - Choose patterns based on NFRs (see `./references/arch-system-design.md`)
+   - Choose patterns based on NFRs (see `.opencode/skills/senior-backend-data-architect/references/arch-system-design.md`)
    - For each pattern: document why chosen, alternatives rejected, consequences
-   - Create ADRs for significant decisions (see `./references/arch-adr-template.md`)
+   - Create ADRs for significant decisions (see `.opencode/skills/senior-backend-data-architect/references/arch-adr-template.md`)
 
 6. **Design for operability**
    - Define observability requirements (metrics, logs, alerts per component)
@@ -151,22 +151,22 @@ Architecture documents should follow this structure (omit irrelevant sections):
 Load deep architectural detail **only when relevant** to the current design task.
 
 ### System design (high-load, scaling, resilience, capacity planning)
-- @.opencode/skills/senior-backend-data-architect/references/arch-system-design.md
+- Read file: `.opencode/skills/senior-backend-data-architect/references/arch-system-design.md`
 
 ### Data platform architecture (topology, governance, CDC, streaming vs batch)
-- @.opencode/skills/senior-backend-data-architect/references/arch-data-platform.md
+- Read file: `.opencode/skills/senior-backend-data-architect/references/arch-data-platform.md`
 
 ### Data modeling (OLTP, OLAP, dimensional, SCD, schema per engine)
-- @.opencode/skills/senior-backend-data-architect/references/arch-data-modeling.md
+- Read file: `.opencode/skills/senior-backend-data-architect/references/arch-data-modeling.md`
 
 ### ML platform architecture (MLOps, feature stores, model serving, monitoring)
-- @.opencode/skills/senior-backend-data-architect/references/arch-ml-platform.md
+- Read file: `.opencode/skills/senior-backend-data-architect/references/arch-ml-platform.md`
 
 ### Domain-Driven Design (bounded contexts, aggregates, context mapping)
-- @.opencode/skills/senior-backend-data-architect/references/arch-ddd-patterns.md
+- Read file: `.opencode/skills/senior-backend-data-architect/references/arch-ddd-patterns.md`
 
 ### Architectural Decision Records
-- @.opencode/skills/senior-backend-data-architect/references/arch-adr-template.md
+- Read file: `.opencode/skills/senior-backend-data-architect/references/arch-adr-template.md`
 
 ## Anti-patterns (architectural)
 

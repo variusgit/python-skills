@@ -285,12 +285,12 @@ markers = [
 This skill covers testing strategy, essential pytest patterns, and CI standards. Domain-specific recipes and advanced pytest mechanics live in dedicated references.
 
 ### Domain-specific testing patterns (DB, Airflow, data pipelines, ML, messaging, service lifecycle)
-- @.opencode/skills/python-testing/references/python-domain-testing-patterns.md
+- Read file: `.opencode/skills/python-testing/references/python-domain-testing-patterns.md`
 
 Load when the code under test touches a specific domain — what to test, fixture patterns, and integration test recipes for each domain.
 
 ### Detailed pytest patterns (fixtures, mocking, assertions, async, CLI)
-- @.opencode/skills/python-testing/references/python-pytest-patterns.md
+- Read file: `.opencode/skills/python-testing/references/python-pytest-patterns.md`
 
 Load when writing or reviewing tests and you need specific pytest recipes (advanced fixtures, parametrized fixtures, mocking properties/context managers, side-effect testing, async fixtures, CLI options).
 

@@ -134,40 +134,40 @@ Create a mini-ADR when any of these are true:
 - compatibility policy changes for APIs/events
 
 Use:
-- @.opencode/skills/senior-python-backend-data/references/python-adr-template.md
+- Read file: `.opencode/skills/senior-python-backend-data/references/python-adr-template.md`
 
 ## Reference routing (progressive disclosure)
 
 This skill stays high-level on purpose. Load deep technical detail **only when relevant**.
 
 ### Mandatory first read (always)
-- @.opencode/skills/senior-python-backend-data/references/python-best-practices.md
+- Read file: `.opencode/skills/senior-python-backend-data/references/python-best-practices.md`
 
-Read `./references/python-best-practices.md` first for every backend/data task. Then load only the most relevant task-specific reference(s).
+Read `python-best-practices.md` first for every backend/data task. Then load only the most relevant task-specific reference(s).
 
 ### Airflow DAG authoring / schedules / backfills / sensors
-- @.opencode/skills/senior-python-backend-data/references/python-airflow-patterns.md
+- Read file: `.opencode/skills/senior-python-backend-data/references/python-airflow-patterns.md`
 
 ### PostgreSQL persistence (constraints, transactions, migrations, query hygiene)
-- @.opencode/skills/senior-python-backend-data/references/python-postgresql.md
+- Read file: `.opencode/skills/senior-python-backend-data/references/python-postgresql.md`
 
 ### Services & API design (FastAPI, aiohttp, gRPC, contracts, microservice patterns)
-- @.opencode/skills/senior-python-backend-data/references/python-services-api.md
+- Read file: `.opencode/skills/senior-python-backend-data/references/python-services-api.md`
 
 ### Data jobs & storage (S3 layout, Parquet partitions, incremental loads, PySpark hygiene)
-- @.opencode/skills/senior-python-backend-data/references/python-data-jobs.md
+- Read file: `.opencode/skills/senior-python-backend-data/references/python-data-jobs.md`
 
 ### Messaging / async processing (at-least-once, dedup, outbox, DLQ)
-- @.opencode/skills/senior-python-backend-data/references/python-messaging.md
+- Read file: `.opencode/skills/senior-python-backend-data/references/python-messaging.md`
 
 ### MPP / analytics (Greenplum or ClickHouse)
-- @.opencode/skills/senior-python-backend-data/references/python-analytics-mpp.md
+- Read file: `.opencode/skills/senior-python-backend-data/references/python-analytics-mpp.md`
 
 ### ML engineering (feature jobs, training pipelines, model serving, monitoring)
-- @.opencode/skills/senior-python-backend-data/references/python-ml-engineering.md
+- Read file: `.opencode/skills/senior-python-backend-data/references/python-ml-engineering.md`
 
 ### Code audit & refactoring (assessing existing codebases, tech debt, refactoring strategy)
-- @.opencode/skills/senior-python-backend-data/references/python-code-audit.md
+- Read file: `.opencode/skills/senior-python-backend-data/references/python-code-audit.md`
 
 **Conflict rule:** treat references as source of truth. If two references conflict, prefer the most task-specific doc; otherwise prefer `python-best-practices.md`. If the conflict impacts correctness/safety, call it out and choose the safer default.
 
