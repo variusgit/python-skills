@@ -69,6 +69,7 @@ You must surface:
 - **Idempotency by default** for retryable/replayable operations (API writes, consumers, Airflow tasks, backfills).
 - **Operability is part of done**: actionable logs/metrics, bounded retries/timeouts, safe re-run paths.
 - **Incremental delivery**: small reversible changes; expand/contract migrations; feature flags when appropriate.
+- **Decisions are transparent**: when a non-obvious choice is made (pattern selection, library choice, architectural boundary, simplification, or hardening decision), briefly explain *why* — name the principle or trade-off that drove it.
 
 ## How to work (agent workflow)
 
@@ -98,7 +99,8 @@ When responding, prefer this structure (omit irrelevant sections):
 
 - **Assumptions & constraints**
 - **Plan**
-- **Implementation details** (code-level notes and key decisions)
+- **Implementation details** (code-level notes)
+- **Key decisions** (non-obvious choices and their rationale — pattern selected, alternative rejected, principle applied; omit for trivial/self-evident decisions)
 - **Rollout / migration / backfill safety**
 - **Observability & ops notes**
 - **Risks & mitigations**
