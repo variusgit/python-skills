@@ -114,6 +114,8 @@ The highest-priority pass. Bugs here cause incidents.
 
 ### Pass 5: Reliability and error handling
 
+For standard-scope changes: check error handling and timeout presence. Circuit breakers, bulkheads, and graceful degradation analysis apply only when the code interacts with multiple external services or handles high-risk data flows.
+
 **Error handling:**
 - No bare `except` or silently swallowed exceptions.
 - Specific exceptions caught; errors propagated with context.
@@ -131,6 +133,8 @@ The highest-priority pass. Bugs here cause incidents.
 - Partial failures handled explicitly (batch processing, fan-out operations).
 
 ### Pass 6: Observability and operability
+
+For standard-scope changes: verify structured logging and that errors are debuggable. Metrics, correlation IDs, alerting signals, feature flags, and runbook notes apply only to complex/distributed/high-risk changes.
 
 **Logging:**
 - Structured logs with stable fields (correlation ID, entity ID, operation).
@@ -274,8 +278,8 @@ Before submitting the review, verify:
 - [ ] I checked contracts: backward compatibility, error shapes, schema changes.
 - [ ] I checked security: input validation, secrets, PII, access control.
 - [ ] I checked performance: unbounded queries, resource leaks, timeouts.
-- [ ] I checked reliability: error handling, retry safety, failure modes.
-- [ ] I checked observability: logs, metrics, operational controls.
+- [ ] I checked reliability proportionally to scope: error handling, retry safety, failure modes.
+- [ ] I checked observability proportionally to scope: logs, metrics, operational controls.
 - [ ] I evaluated test adequacy for the change.
 - [ ] I checked code quality: boundaries, readability, dependencies.
 - [ ] Every finding has a severity and a concrete recommendation.
