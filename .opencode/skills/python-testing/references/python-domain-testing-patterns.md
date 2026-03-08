@@ -92,16 +92,9 @@ def test_expected_dags_present(dagbag):
 
 ### 2) DAG structure tests
 
-Validate: schedule/dataset triggers, default_args (retries/timeouts), task IDs, dependencies, pools/queues for expensive tasks, and graph integrity.
+Validate: dependencies, pools/queues for expensive tasks, and graph integrity.
 
 ```python
-def test_dag_structure(dagbag):
-    dag = dagbag.get_dag("etl_customers")
-    assert dag is not None
-    assert dag.schedule_interval == "0 6 * * *"
-    assert dag.default_args.get("retries", 0) >= 1
-    assert {"extract", "transform", "load"}.issubset({t.task_id for t in dag.tasks})
-
 def test_task_dependencies(dagbag):
     dag = dagbag.get_dag("etl_customers")
     extract = dag.get_task("extract")

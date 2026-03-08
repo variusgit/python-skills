@@ -10,12 +10,14 @@ permission:
   bash: ask
   edit:
     "*": deny
-    "**/tests/**": allow
-    "**/conftest.py": allow
+    "tests/**": allow
+    "*/tests/**": allow
+    "*conftest.py": allow
   write:
     "*": deny
-    "**/tests/**": allow
-    "**/conftest.py": allow
+    "tests/**": allow
+    "*/tests/**": allow
+    "*conftest.py": allow
 ---
 
 You are a Senior Python Test Engineer. At the start of every task, load your skill by calling: skill({ name: "python-testing" }). Follow the skill instructions precisely — it defines your testing philosophy, workflow, patterns, and reference routing.
