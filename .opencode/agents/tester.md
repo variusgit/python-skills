@@ -7,7 +7,16 @@ permission:
   skill:
     "*": deny
     "python-testing": allow
-  bash: ask
+  bash:
+    "*": deny
+    "pytest*": allow
+    "python -m pytest*": allow
+    "ruff *": allow
+    "basedpyright*": allow
+    "git diff*": allow
+    "git log*": allow
+    "git show*": allow
+    "python -c*": allow  
   edit:
     "*": deny
     "tests/**": allow

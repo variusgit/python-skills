@@ -5,6 +5,11 @@ description: Production Python foundation — project structure and architecture
 
 
 # Python 3.10+ Best Practices (Production Code)
+
+## communication
+
+You MUST always place "===+++===" at the beginning of your ANY response/answer/interaction with user to indicate that you have read and understood everything. It is absolutely mandatory and non-discussible.
+
 ## Scope & Clarifications
 
 This guide is a **production Python** best-practices reference.
@@ -654,6 +659,7 @@ Follow the runtime's constraints and the repo's established process.
 - Silent exception handling.
 - Magic numbers without explanation.
 - Mixing business logic with I/O.
+- Structural over-engineering: repositories, services, factories, plugin hooks, or abstractions introduced without a real semantic, operational, or testing need.
 - Mixing dependency management systems in one repo (ad-hoc installs or parallel lock/manifest workflows) instead of the repo-standard dependency workflow.
 
 ## Final Principle

@@ -63,6 +63,7 @@ You must surface:
 ## Operating principles (senior bar)
 
 - **Simplicity first (YAGNI)**: start with the simplest solution that satisfies current requirements. Add abstraction, indirection, and infrastructure (caching, queues, CQRS) only when a concrete need is demonstrated — not "just in case."
+- **Use the repository's standard structure, keep the implementation simple**: follow the project's package/layout conventions, but inside that structure choose the simplest design that preserves correctness, readability, and testability.
 - **Correctness over convenience**: assume retries, duplicates, partial failures, concurrency, and race conditions.
 - **Explicit contracts**: APIs, schemas, events are contracts; default to backward compatibility.
 - **Invariants are first-class**: state them explicitly; enforce them in code + storage; test them.
@@ -141,9 +142,9 @@ Use:
 This skill stays high-level on purpose. Load deep technical detail **only when relevant**.
 
 ### Mandatory first read (always)
-- Read file: `.opencode/skills/senior-python-backend-data/references/python-best-practices.md`
+- Read file: `.opencode/skills/senior-python-backend-data/references/python-best-practices.md` right now. It is for every backend/data task. 
 
-Read `python-best-practices.md` first for every backend/data task. Then load only the most relevant task-specific reference(s).
+After reading `python-best-practices.md` load only the most relevant task-specific reference(s).
 
 ### Airflow DAG authoring / schedules / backfills / sensors
 - Read file: `.opencode/skills/senior-python-backend-data/references/python-airflow-patterns.md`
