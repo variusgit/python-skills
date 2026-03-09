@@ -272,20 +272,8 @@ myproject/
 
 ### Import Conventions
 
-```python
-# Good: Import order - stdlib, third-party, local
-import os
-import sys
-from pathlib import Path
-
-import requests
-from fastapi import FastAPI
-
-from mypackage.models import User
-from mypackage.utils import format_name
-
-# Good: Use isort or Ruff for automatic import sorting
-```
+- Group imports as standard library / third-party / local modules.
+- Use the repo-standard tool (`Ruff` or `isort`) to enforce import ordering automatically.
 
 ## 3. Simplicity and YAGNI
 
@@ -393,17 +381,9 @@ Use these names when justifying decisions: "extracting this violates YAGNI — t
 - Avoid single-letter names except for loop counters (e.g., `i`, `j` in simple loops).
 
 ### Example: Descriptive Naming
-```python
-# Good
-user_count = 10
-def calculate_total_price(items):
-    pass
-
-# Bad
-uc = 10
-def calc(i):
-    pass
-```
+- Prefer names that reflect domain meaning, boundary role, or business intent rather than implementation accident.
+- Distinguish boundary objects clearly (for example `payload`, `command`, `entity`, `row`, `response`) so responsibilities stay obvious.
+- Rename when a name hides ownership, lifecycle, or business semantics.
 
 ## 8. Functions and Design
 - Functions should do one thing and do it clearly.
@@ -422,25 +402,9 @@ def calc(i):
 - Include helpful error messages.
 
 ### Example: Helpful Error Messages
-```python
-import logging # root logger should be setup before program runs
-
-# Good
-try:
-    result = process_data(data)
-except ValueError as e:
-    logging.error("Invalid data format: %s", e)
-    raise
-except ConnectionError as e:
-    logging.error("Failed to connect: %s", e)
-    return None
-
-# Bad
-try:
-    result = process_data(data)
-except:
-    pass
-```
+- Log enough context to diagnose the failing boundary or operation.
+- Preserve the exception type/cause; do not hide critical failures behind ambiguous sentinel values.
+- Separate user-facing error shapes from operational logging and debugging detail.
 
 ## 10. Idempotency Patterns
 When retries/replays are possible:

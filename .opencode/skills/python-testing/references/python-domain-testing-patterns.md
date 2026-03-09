@@ -260,27 +260,26 @@ Test handlers as plain functions with injected dependencies.
 
 ```python
 @pytest.fixture
-def mock_repo():
-    return Mock(spec=OrderRepository)
+def repo():
+    return InMemoryOrderRepository()
 
-def test_order_created_handler_persists_order(mock_repo):
+def test_order_created_handler_persists_order(repo):
     event = OrderCreatedEvent(order_id=42, total=100.0, currency="USD")
-    handle_order_created(event, repo=mock_repo)
-    mock_repo.save.assert_called_once()
-    saved = mock_repo.save.call_args[0][0]
-    assert saved.id == 42
+    handle_order_created(event, repo=repo)
+    saved = repo.get(42)
+    assert saved is not None
     assert saved.total == 100.0
 
-def test_handler_is_idempotent(mock_repo):
+def test_handler_is_idempotent(repo):
     event = OrderCreatedEvent(order_id=42, total=100.0, currency="USD")
-    mock_repo.exists.return_value = True
-    handle_order_created(event, repo=mock_repo)
-    mock_repo.save.assert_not_called()
+    handle_order_created(event, repo=repo)
+    handle_order_created(event, repo=repo)
+    assert repo.count() == 1
 
-def test_handler_rejects_negative_total(mock_repo):
+def test_handler_rejects_negative_total(repo):
     event = OrderCreatedEvent(order_id=42, total=-10.0, currency="USD")
     with pytest.raises(ValueError, match="negative total"):
-        handle_order_created(event, repo=mock_repo)
+        handle_order_created(event, repo=repo)
 ```
 
 ### 3) Producer tests
@@ -288,37 +287,38 @@ def test_handler_rejects_negative_total(mock_repo):
 Verify that produced messages have correct routing, schema, and headers.
 
 ```python
-def test_producer_publishes_correct_event(mock_publisher):
-    publish_order_event(order_id=1, total=50.0, publisher=mock_publisher)
-    mock_publisher.publish.assert_called_once()
-    msg = mock_publisher.publish.call_args[0][0]
+def test_producer_emits_contract_compliant_event(fake_publisher):
+    publish_order_event(order_id=1, total=50.0, publisher=fake_publisher)
+    assert len(fake_publisher.messages) == 1
+    msg = fake_publisher.messages[0]
     assert msg["type"] == "order.created"
-    assert msg["payload"]["order_id"] == 1
+    assert msg["payload"] == {"order_id": 1, "total": 50.0}
 
-def test_producer_sets_idempotency_key(mock_publisher):
-    publish_order_event(order_id=1, total=50.0, publisher=mock_publisher)
-    msg = mock_publisher.publish.call_args[0][0]
+def test_producer_sets_idempotency_key(fake_publisher):
+    publish_order_event(order_id=1, total=50.0, publisher=fake_publisher)
+    msg = fake_publisher.messages[0]
     assert "idempotency_key" in msg["metadata"]
 ```
 
 ### 4) Dead letter / retry behavior tests
 
 ```python
-def test_failed_message_routes_to_dlq(mock_publisher, mock_repo):
+def test_failed_message_routes_to_dlq(fake_publisher, mock_repo):
     mock_repo.save.side_effect = DatabaseError("connection lost")
     event = OrderCreatedEvent(order_id=42, total=100.0, currency="USD")
 
     with pytest.raises(DatabaseError):
-        handle_order_created(event, repo=mock_repo, publisher=mock_publisher)
+        handle_order_created(event, repo=mock_repo, publisher=fake_publisher)
 
-    mock_publisher.send_to_dlq.assert_called_once()
+    assert len(fake_publisher.dlq_messages) == 1
+    assert fake_publisher.dlq_messages[0]["order_id"] == 42
 
 def test_transient_failure_is_retryable():
     handler = RetryableHandler(max_retries=3)
     handler.process = Mock(side_effect=[TransientError, TransientError, "ok"])
     result = handler.execute(sample_message)
     assert result == "ok"
-    assert handler.process.call_count == 3
+    assert handler.attempts == 3
 ```
 
 ### 5) Integration tests (broker in container)
@@ -364,13 +364,15 @@ def test_readiness_returns_200_when_deps_healthy(client):
     response = client.get("/health/ready")
     assert response.status_code == 200
     body = response.json()
-    assert body["database"] == "ok"
-    assert body["cache"] == "ok"
+    assert body["status"] == "ready"
+    assert body["checks"]["database"] == "ok"
+    assert body["checks"]["cache"] == "ok"
 
 def test_readiness_returns_503_when_db_unavailable(client, monkeypatch):
     monkeypatch.setattr("app.deps.db_pool.check", Mock(side_effect=ConnectionError))
     response = client.get("/health/ready")
     assert response.status_code == 503
+    assert response.json()["status"] == "not_ready"
 ```
 
 ### 2) Startup hook tests
@@ -410,6 +412,7 @@ async def test_shutdown_drains_in_flight_requests():
         assert response.status_code == 200
 
         await shutdown_task
+        assert app.state.accepting_requests is False
 
 async def test_shutdown_closes_db_pool():
     app = create_app(config=test_config)
@@ -421,7 +424,7 @@ async def test_shutdown_unregisters_from_service_discovery(mock_registry):
     app = create_app(config=test_config, registry=mock_registry)
     async with app_lifespan(app):
         pass
-    mock_registry.deregister.assert_called_once()
+    mock_registry.deregister.assert_called_once_with(app.state.instance_id)
 ```
 
 ### 4) Configuration and environment tests
@@ -431,14 +434,14 @@ def test_config_loads_from_environment(monkeypatch):
     monkeypatch.setenv("DATABASE_URL", "postgresql://localhost/test")
     monkeypatch.setenv("LOG_LEVEL", "DEBUG")
     config = load_config()
-    assert config.database_url == "postgresql://localhost/test"
+    assert config.database_url.scheme == "postgresql"
     assert config.log_level == "DEBUG"
 
 def test_config_uses_defaults_for_optional_values(monkeypatch):
     monkeypatch.setenv("DATABASE_URL", "postgresql://localhost/test")
     monkeypatch.delenv("LOG_LEVEL", raising=False)
     config = load_config()
-    assert config.log_level == "INFO"  # default
+    assert config.log_level == DEFAULT_LOG_LEVEL
 
 def test_config_rejects_invalid_database_url(monkeypatch):
     monkeypatch.setenv("DATABASE_URL", "not-a-url")

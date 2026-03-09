@@ -79,6 +79,12 @@ TDD applies to business logic, domain rules, and data transformations. For thin 
 
 Match testing depth to code complexity. A pure function needs a unit test, not a containerized integration suite. Test what the code actually does — don't test for patterns the code doesn't use (messaging, lifecycle, pipelines) just because the checklist mentions them.
 
+### Behavior-first assertions
+
+Prefer assertions about invariants, state transitions, contracts, and externally visible side effects over exact intermediate values, internal calls, or incidental implementation details.
+
+Exact values are worth asserting when they are themselves part of the contract (for example status codes, schema fields, error codes, money amounts, timestamps after normalization, or idempotency keys).
+
 ## pytest patterns (essential)
 
 ### Fixtures
@@ -141,6 +147,8 @@ Use `ids` for readable test output. Parametrize boundary conditions, error cases
 
 Mock at **system boundaries** — HTTP clients, message brokers, S3/storage, external APIs. Avoid mocking pure domain functions; test them directly.
 
+Use interaction assertions only when the interaction itself is part of the contract (for example "message is published", "DLQ is triggered", "dependency is not called on duplicate"). Do not turn internal call order or routine call counts into the primary value of the test.
+
 ```python
 from unittest.mock import patch, Mock
 
@@ -156,13 +164,13 @@ def test_service_handles_api_failure(api_mock):
 
 # Use autospec to catch API misuse
 @patch("mypackage.repos.UserRepository", autospec=True)
-def test_user_creation(repo_mock):
-    repo_mock.return_value.save.return_value = User(id=1, name="Alice")
+def test_user_creation_surfaces_duplicate_email_as_domain_error(repo_mock):
+    repo_mock.return_value.save.side_effect = DuplicateEmailError("email exists")
 
     service = UserService(repo_mock.return_value)
-    user = service.create_user(name="Alice")
+    with pytest.raises(UserAlreadyExistsError):
+        service.create_user(name="Alice", email="alice@example.com")
 
-    assert user.name == "Alice"
     repo_mock.return_value.save.assert_called_once()
 ```
 
@@ -300,6 +308,7 @@ Load when writing or reviewing tests and you need specific pytest recipes (advan
 
 - Follow TDD for non-trivial logic (red → green → refactor).
 - Test one behavior per test function.
+- Prefer tests that assert invariants, state transitions, contracts, and externally visible side effects.
 - Use descriptive names: `test_user_login_with_expired_token_returns_401`.
 - Use fixtures to eliminate duplication; keep them small and local.
 - Mock at system boundaries only.
@@ -310,6 +319,7 @@ Load when writing or reviewing tests and you need specific pytest recipes (advan
 ### Don't
 
 - Don't test implementation details — test behavior and contracts.
+- Don't make exact intermediate values, mock call counts, or internal call order the main point of the test unless they are part of the contract.
 - Don't share mutable state between tests.
 - Don't mock domain logic — test it directly.
 - Don't write tests that depend on execution order.
@@ -322,6 +332,7 @@ Load when writing or reviewing tests and you need specific pytest recipes (advan
 ### Always
 
 - Unit tests cover core invariants, boundary conditions, and error paths.
+- Tests should remain valid after internal refactoring if the external behavior and contract stay the same.
 - CI gates run lint, type-check, and deterministic pytest suites.
 - No flaky tests in the suite; determinism rules are enforced.
 

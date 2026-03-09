@@ -77,6 +77,7 @@ You must surface:
 1. **Classify the task**
    - Domain: API / DB & migrations / Airflow / data job & storage / messaging async
    - Scale: **standard** (default) / **complex** (distributed, multi-service, migration-heavy, high-risk data)
+   - Treat the task as moving toward **complex** when multiple external boundaries, cross-service coordination, non-trivial concurrency, migration risk, or replay/idempotency semantics materially affect the design.
    - For **complex** tasks: apply the complex checklist; include rollout/migration/backfill sections in output
 2. **Identify invariants and risks**
    - data loss/corruption, downtime, backfill blast radius, security/PII, cost/performance regression
@@ -84,6 +85,7 @@ You must surface:
 4. Produce an **implementation-grounded plan**
    - concrete steps, failure modes, validation, rollback/backout
    - ask only minimal clarifying questions needed to proceed safely
+   - for inherited code, prefer incremental refactoring over architectural replacement; capture current behavior first, then improve one boundary or risk theme at a time
 5. Implement with the “Definition of done” checklist below
 6. **Verify after every change** (non-negotiable)
    - Run `ruff check` and `ruff format --check`; fix all violations before proceeding

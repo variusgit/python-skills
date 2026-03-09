@@ -15,6 +15,8 @@ Practical pytest recipes organized by category. This document covers **how** to 
 
 ## Assertions
 
+Choose assertions based on the behavior or contract that matters. Prefer assertions that would remain valid after internal refactoring if the externally visible behavior stays the same.
+
 ### Equality and comparison
 
 ```python
@@ -230,12 +232,12 @@ For mocking strategy (where to mock) and `autospec`, see `../SKILL.md`.
 from unittest.mock import patch, Mock
 
 @patch("mypackage.db.get_connection")
-def test_uses_connection(conn_mock):
+def test_fetch_users_returns_rows_from_dependency(conn_mock):
     conn_mock.return_value = Mock()
     conn_mock.return_value.execute.return_value = [{"id": 1}]
 
     result = fetch_users()
-    assert result == [{"id": 1}]
+    assert [row["id"] for row in result] == [1]
     conn_mock.return_value.execute.assert_called_once()
 ```
 
@@ -252,7 +254,7 @@ def test_retry_logic(fetch_mock):
 
     result = fetch_with_retry(max_retries=3)
     assert result == {"status": "ok"}
-    assert fetch_mock.call_count == 3
+    assert fetch_mock.call_count == 3  # secondary check; primary value is successful retry behavior
 ```
 
 ### Mocking context managers
@@ -261,10 +263,10 @@ def test_retry_logic(fetch_mock):
 from unittest.mock import patch, mock_open
 
 @patch("builtins.open", mock_open(read_data="file content"))
-def test_read_config(mock_file):
+def test_read_config_returns_loaded_content(mock_file):
     result = read_config("config.yaml")
-    mock_file.assert_called_once_with("config.yaml", "r")
     assert result == "file content"
+    mock_file.assert_called_once_with("config.yaml", "r")
 ```
 
 ### Mocking properties
@@ -288,14 +290,14 @@ def test_debug_mode(mock_config):
 ```python
 from unittest.mock import create_autospec
 
-def test_service_with_spec():
+def test_service_with_spec_returns_user_found_by_repository():
     repo = create_autospec(UserRepository, instance=True)
     repo.find_by_id.return_value = User(id=1, name="Alice")
 
     service = UserService(repo)
     user = service.get_user(1)
 
-    assert user.name == "Alice"
+    assert user.id == 1
     repo.find_by_id.assert_called_once_with(1)
     # repo.nonexistent_method() would raise AttributeError
 ```

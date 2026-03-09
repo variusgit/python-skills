@@ -86,6 +86,8 @@ When planning refactoring based on audit findings:
 
 - **Characterization tests first**: before changing behavior, capture current behavior in tests. If you don't know what the code does, you can't safely change it.
 - **Incremental over big-bang**: prefer a series of small, independently deployable changes over a single large rewrite. Each step should leave the system in a working state.
+- **Preserve working structure unless it is the problem**: do not replace the current architecture just to make it "cleaner"; extract and improve the specific boundary, dependency, or failure mode that is creating risk.
+- **Broader restructuring is justified when the current architecture is itself the recurring source of defects, delivery friction, or operational risk.**
 - **Strangler fig for service extraction**: when extracting a module into a service, route traffic gradually — old and new paths coexist until the new one is proven.
 - **Expand/contract for interface changes**: add the new interface alongside the old one, migrate consumers, then remove the old interface. Never break callers.
 - **Parallel run for data migration validation**: when migrating data transformations, run old and new pipelines in parallel and compare outputs before cutting over.
