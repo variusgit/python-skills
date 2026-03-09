@@ -85,6 +85,24 @@ Prefer assertions about invariants, state transitions, contracts, and externally
 
 Exact values are worth asserting when they are themselves part of the contract (for example status codes, schema fields, error codes, money amounts, timestamps after normalization, or idempotency keys).
 
+### How to choose a high-value test
+
+Before writing the test, ask in this order:
+1. **What is the contract?** — public API shape, event schema, persistence rule, error semantics, lifecycle behavior.
+2. **What invariant can break?** — uniqueness, idempotency, monotonicity, validation, retry safety, compatibility.
+3. **What observable effect should remain true?** — persisted state, emitted event, returned error, readiness status, transformed output.
+4. **Do I need an interaction assertion at all?** — only if that interaction is itself part of the contract.
+
+If a test can be written either as "internal method X was called" or as "the externally visible behavior stayed correct", prefer the second form.
+
+### Assertion types
+
+- **Contract assertions** — verify public responses, schemas, error codes, compatibility, emitted message shape.
+- **Invariant assertions** — verify rules that must always hold (uniqueness, idempotency, ordering, normalization).
+- **State transition assertions** — verify that the system moved from one valid state to another expected state.
+- **Observable side-effect assertions** — verify persisted records, emitted notifications, readiness state, DLQ routing, written files.
+- **Interaction assertions** — verify calls to dependencies only when the call itself is the behavior or contract.
+
 ## pytest patterns (essential)
 
 ### Fixtures
@@ -309,6 +327,7 @@ Load when writing or reviewing tests and you need specific pytest recipes (advan
 - Follow TDD for non-trivial logic (red → green → refactor).
 - Test one behavior per test function.
 - Prefer tests that assert invariants, state transitions, contracts, and externally visible side effects.
+- Start by identifying the contract or invariant that matters most; let that drive the assertion style.
 - Use descriptive names: `test_user_login_with_expired_token_returns_401`.
 - Use fixtures to eliminate duplication; keep them small and local.
 - Mock at system boundaries only.
@@ -332,6 +351,7 @@ Load when writing or reviewing tests and you need specific pytest recipes (advan
 ### Always
 
 - Unit tests cover core invariants, boundary conditions, and error paths.
+- Tests prioritize contracts, invariants, and observable behavior over internal choreography.
 - Tests should remain valid after internal refactoring if the external behavior and contract stay the same.
 - CI gates run lint, type-check, and deterministic pytest suites.
 - No flaky tests in the suite; determinism rules are enforced.
@@ -350,5 +370,6 @@ Load when writing or reviewing tests and you need specific pytest recipes (advan
 - **Flaky tests**: isolate time/network; remove sleeps; control randomness; fix shared state.
 - **Slow tests**: split integration from unit; cache heavy fixtures; shrink datasets; use markers.
 - **Brittle tests**: assert behavior and contracts, not internal call order or mock call counts.
+- **Literal tests**: asserting incidental values or mock choreography when an invariant, contract, or observable effect would be more stable.
 - **Low-value tests**: testing wiring/glue instead of business logic; chasing coverage instead of correctness.
 - **Missing coverage**: no tests for invariants, idempotency, or error paths in critical flows.

@@ -181,6 +181,29 @@ def create_order(data):
 | New scheduled job with no failure alerting | **major** | Failures go unnoticed |
 | Backfill without throttling or isolation strategy | **major** | Can saturate production workloads |
 
+## Container and runtime packaging
+
+### What to verify
+
+- Runtime image is pinned to an explicit base version, not `latest`.
+- Container runs as non-root unless there is a documented reason otherwise.
+- Multi-stage build used when it materially reduces runtime image size or attack surface.
+- Dependency installation is layered before copying frequently changing application code.
+- Secrets are not baked into image layers via `ARG`, `ENV`, or copied secret files.
+- `.dockerignore` excludes obvious noise and secret-bearing files (`.git`, `.env`, local venvs, caches).
+- Healthcheck exists when the container is expected to run as a long-lived service.
+
+### Red flags
+
+| Finding | Severity | Why |
+|---------|----------|-----|
+| Secrets embedded in Dockerfile via `ARG` / `ENV` / copied secret file | **blocker** | Secrets leak into image history and registries |
+| Runtime container runs as root without justification | **major** | Increased blast radius on container compromise |
+| Base image uses `latest` tag | **major** | Non-reproducible builds, surprise runtime changes |
+| No `.dockerignore` and repo includes large/local/secret files | **major** | Slow builds, secret leakage, noisy build context |
+| Dependencies installed after copying the full application tree | **minor** | Poor layer caching, slower CI builds |
+| Long-lived service image has no healthcheck or equivalent readiness mechanism | **major** | Orchestrator cannot detect unhealthy container state reliably |
+
 ## Severity quick reference
 
 ### Blockers (must fix before merge)
@@ -189,6 +212,7 @@ def create_order(data):
 - PII or secrets in log output
 - Bare `except: pass` hiding failures
 - Non-idempotent pipeline task + retries
+- Secrets embedded in Docker image build instructions
 
 ### Critical (must fix before merge)
 
@@ -207,6 +231,10 @@ def create_order(data):
 - Critical flow without operational notes
 - Error messages without identifying context
 - Retrying non-transient errors (4xx)
+- Runtime container runs as root without justification
+- Base image uses `latest`
+- No `.dockerignore` for service/containerized repo
+- Long-lived service has no healthcheck or equivalent probe
 
 ### Minor (fix or acknowledge)
 
@@ -214,3 +242,4 @@ def create_order(data):
 - Wrong log levels
 - Stale feature flags
 - Duration metric without appropriate buckets
+- Dependency installation ordered poorly for build caching

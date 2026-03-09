@@ -273,8 +273,9 @@ def test_order_created_handler_persists_order(repo):
 def test_handler_is_idempotent(repo):
     event = OrderCreatedEvent(order_id=42, total=100.0, currency="USD")
     handle_order_created(event, repo=repo)
-    handle_order_created(event, repo=repo)
+    handle_order_created(event, repo=repo)  # duplicate delivery of the same event
     assert repo.count() == 1
+    assert repo.get(42).total == 100.0
 
 def test_handler_rejects_negative_total(repo):
     event = OrderCreatedEvent(order_id=42, total=-10.0, currency="USD")
@@ -456,14 +457,15 @@ def test_service_receives_injected_dependencies():
     repo = FakeOrderRepository()
     notifier = FakeNotifier()
     service = OrderService(repo=repo, notifier=notifier)
-    service.create_order(order_data)
-    assert repo.saved_count == 1
-    assert notifier.sent_count == 1
+    created = service.create_order(order_data)
+    assert repo.get(created.id) == created
+    assert notifier.last_order_id == created.id
 
 def test_service_works_with_real_dependencies_in_integration(db_session):
     repo = SQLOrderRepository(db_session)
     notifier = LogNotifier()
     service = OrderService(repo=repo, notifier=notifier)
-    service.create_order(order_data)
-    assert db_session.query(Order).count() == 1
+    created = service.create_order(order_data)
+    stored = db_session.query(Order).filter_by(id=created.id).one()
+    assert stored.id == created.id
 ```

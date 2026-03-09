@@ -16,6 +16,9 @@ This is an **evaluation guide**, not a build guide. Check reviewed code against 
 - Reviewing Airflow DAG definitions, task wiring, or backfill logic.
 - Reviewing data jobs (PySpark, batch processing) or storage layout changes.
 - Reviewing messaging consumers, producers, or event-driven flows.
+- Reviewing concurrency/async code paths, worker fan-out, or cancellation/retry behavior.
+- Reviewing analytics/MPP queries and storage access patterns (Greenplum, ClickHouse, OLAP workloads).
+- Reviewing ML feature, training, serving, or monitoring changes.
 
 Load selectively — only the sections relevant to the change under review.
 
@@ -338,6 +341,91 @@ def handle_order(order_data):
 
 ---
 
+## Concurrency and async code
+
+### Correct pattern characteristics
+
+- Async paths do not perform blocking I/O or CPU-heavy work on the event loop.
+- Fan-out concurrency is bounded (semaphore, pool size, worker limit) rather than unbounded.
+- Cancellation is handled intentionally — resources are cleaned up and partial work is safe.
+- Shared mutable state across tasks/threads is avoided or synchronized.
+- Timeouts are present around potentially hanging operations.
+- Retry logic, concurrency limits, and backpressure work together instead of amplifying load.
+
+### Red flags
+
+| Finding | Severity | Why |
+|---------|----------|-----|
+| Blocking network/DB/file call inside async request path | **critical** | Event loop stalls, latency spikes across unrelated requests |
+| Unbounded `asyncio.gather(...)` / task creation on user-controlled input size | **critical** | Memory blow-up, connection storms, loss of backpressure |
+| Shared mutable state across tasks/threads without synchronization | **critical** | Race conditions, data corruption, heisenbugs |
+| Cancellation ignored in long-running async task | **major** | Shutdown hangs, leaked work, inconsistent cleanup |
+| CPU-heavy work done inline in async handler | **major** | Throughput collapse — event loop blocked by CPU work |
+| No timeout around external call in concurrent/fan-out path | **critical** | One stuck dependency stalls many in-flight units of work |
+
+### Anti-pattern recognition
+
+```python
+# RED FLAG: blocking call inside async path
+async def get_user_profile(user_id: str) -> dict:
+    response = requests.get(f"https://profiles/{user_id}")  # blocks event loop
+    return response.json()
+
+# CORRECT: non-blocking call with timeout
+async def get_user_profile(client: httpx.AsyncClient, user_id: str) -> dict:
+    response = await client.get(f"https://profiles/{user_id}", timeout=5.0)
+    return response.json()
+
+# RED FLAG: unbounded fan-out
+results = await asyncio.gather(*(fetch(item) for item in items))
+
+# CORRECT: bounded concurrency
+sem = asyncio.Semaphore(20)
+async def fetch_bounded(item):
+    async with sem:
+        return await fetch(item)
+results = await asyncio.gather(*(fetch_bounded(item) for item in items))
+```
+
+---
+
+## MPP / analytics paths (Greenplum, ClickHouse, OLAP workloads)
+
+### Correct pattern characteristics
+
+- Heavy scans and aggregations are intentionally routed to the analytics store, not the transactional DB.
+- Partitioning/distribution/order-key choices match the dominant query patterns.
+- Reviewer can see how freshness, latency, and cost trade-offs were considered for analytical queries.
+- Large analytical reads are bounded by partition/date/key filters where possible.
+- Joins and aggregations avoid obviously explosive cardinality or repeated full scans on hot paths.
+
+### Red flags
+
+| Finding | Severity | Why |
+|---------|----------|-----|
+| Transactional DB used for large analytical scans already assigned to MPP store | **major** | OLTP workload is degraded by analytics traffic |
+| Query has no partition/date filter on a known large analytical dataset | **major** | Full scan cost, latency spike, resource waste |
+| Distribution/partition choice clearly conflicts with join or filter pattern | **major** | Skew, shuffle amplification, degraded performance |
+| Per-row lookup pattern against ClickHouse/Greenplum from request path | **critical** | Wrong store/access pattern for low-latency serving |
+| No row-count/freshness sanity check after analytical materialization change | **major** | Silent completeness regressions |
+
+### Anti-pattern recognition
+
+```sql
+-- RED FLAG: full analytical scan on a hot path without partition filter
+SELECT user_id, sum(amount)
+FROM events
+GROUP BY user_id;
+
+-- CORRECT: bounded analytical query
+SELECT user_id, sum(amount)
+FROM events
+WHERE dt >= '2026-01-01' AND dt < '2026-02-01'
+GROUP BY user_id;
+```
+
+---
+
 ## ML engineering
 
 ### Correct pattern characteristics
@@ -443,6 +531,11 @@ async def lifespan(app: FastAPI):
 - UDF where built-in function exists
 - No pool/queue for resource-intensive Airflow tasks
 - Global ordering assumption in messaging
+- Transactional DB used for analytical scan instead of MPP/OLAP path
+- No partition/date filter on clearly large analytical query
+- Distribution/partition choice conflicts with dominant query pattern
+- CPU-heavy or blocking work in async request path
+- Unbounded async/task fan-out
 - No experiment tracking for training runs
 - No model version in prediction response
 - No feature drift monitoring

@@ -17,6 +17,14 @@ Practical pytest recipes organized by category. This document covers **how** to 
 
 Choose assertions based on the behavior or contract that matters. Prefer assertions that would remain valid after internal refactoring if the externally visible behavior stays the same.
 
+### Assertion types
+
+- **Contract assertions**: response shape, schema compatibility, status/error codes, emitted message fields that consumers rely on.
+- **Invariant assertions**: uniqueness, idempotency, ordering, normalization, no-duplicate effects, monotonicity.
+- **State transition assertions**: what changed in storage, memory, workflow state, or lifecycle status after the action.
+- **Observable side-effect assertions**: files written, rows persisted, notifications emitted, DLQ entries created, readiness changed.
+- **Interaction assertions**: dependency calls, call counts, arguments. Use these only when the interaction itself is part of the contract or when no stronger observable assertion is practical.
+
 ### Equality and comparison
 
 ```python
@@ -78,6 +86,14 @@ with pytest.warns(DeprecationWarning, match="old_func"):
 ## Fixtures (advanced)
 
 For basic fixture usage and conftest.py, see `../SKILL.md`. This section covers advanced patterns.
+
+High-value use:
+- Make setup explicit, reusable, and deterministic.
+- Isolate dependencies or build meaningful test data.
+
+Low-value use:
+- Hiding important behavior in fixtures so tests become hard to read.
+- Creating giant fixtures that do too much or mutate unrelated state.
 
 ### Scopes
 
@@ -186,6 +202,13 @@ def test_multiple_users(make_user):
 
 For basic `@pytest.mark.parametrize` with IDs, see `../SKILL.md`.
 
+High-value use:
+- Boundary values, equivalence classes, normalization rules, compatibility matrices.
+
+Low-value use:
+- Repeating near-identical literals without clarifying what behavior dimension is being explored.
+- Generating many cases that add coverage count but no new risk signal.
+
 ### Multiple parameter axes
 
 ```python
@@ -225,6 +248,14 @@ def test_compute(backend):
 ## Mocking (advanced)
 
 For mocking strategy (where to mock) and `autospec`, see `../SKILL.md`.
+
+High-value use:
+- Drive failure modes at system boundaries.
+- Verify externally meaningful side effects when direct observation would be expensive or impossible.
+
+Low-value use:
+- Reconstruct internal choreography with many mocks.
+- Assert call order/counts when the test could instead verify state, contract, or observable effect.
 
 ### Configuring return values
 

@@ -30,7 +30,22 @@ Do not use this skill for writing code, designing systems, or writing tests — 
 - **Think in failure modes**: what happens when this fails? Retries? Partial writes? Timeouts?
 - **Think in contracts**: does this change what callers/consumers expect? Is it backward-compatible?
 - **Think in blast radius**: if this is wrong, what breaks? How fast do we detect it? Can we roll back?
+- **Think in proportionality**: flag missing rigor when the risk demands it, and flag unnecessary complexity when it increases maintenance, correctness, or operability cost without clear value.
 - **Substance over style**: focus on correctness, safety, and clarity — not formatting preferences.
+
+## Review modes
+
+Choose the review mode before you start:
+
+- **Diff / PR review**: evaluate what changed, what it affects, and whether the diff is safe to merge.
+- **Codebase / module audit**: evaluate an existing service, module, or subsystem for systemic risk, production-readiness, and refactoring priorities.
+
+For **codebase / module audit**:
+- define the audit scope first (service / package / subsystem / workflow);
+- inspect entry points, boundaries, and the highest-risk modules before drilling into details;
+- use the same review passes, but group findings by recurring themes rather than by diff hunk;
+- distinguish **systemic findings** ("retry safety is weak across handlers") from **local findings** ("this handler swallows timeout errors");
+- do not mimic PR review language when there is no diff. Summarize risk themes, representative examples, and remediation order.
 
 ## Review workflow
 
@@ -40,10 +55,10 @@ Review in this order. Each pass has a specific focus — do not mix concerns acr
 
 Before evaluating anything:
 
-1. Read the full diff. Understand what changed and why.
+1. Read the full diff if this is a PR review; if this is a codebase audit, map the reviewed scope first (entry points, boundaries, critical paths, and representative modules).
 2. Identify the scope: which modules, layers, and boundaries are touched.
 3. Determine the change type: new feature / refactor / bugfix / migration / config change / dependency update.
-4. Note what is NOT changed but might be affected (callers, consumers, downstream).
+4. Note what is NOT changed but might be affected (callers, consumers, downstream). For codebase audits, note adjacent areas that likely share the same risk pattern.
 
 Do not start evaluating until you understand the intent and scope. If intent is unclear or a pattern looks deliberately unconventional, ask the author rather than assuming it's a mistake.
 
@@ -183,6 +198,7 @@ Evaluate whether the tests are sufficient for the change — do not write tests.
 **Readability:**
 - Naming is clear and consistent with codebase conventions.
 - No unnecessary complexity or over-abstraction.
+- Flag complexity only when it adds real maintenance, operability, or correctness cost; do not demand abstractions, framework ceremony, or distributed-system machinery for simple changes.
 - No dead code, commented-out code, or debug artifacts.
 - Functions are focused (single responsibility, reasonable length).
 
@@ -244,11 +260,68 @@ Group findings by severity (blockers first). End with a summary:
 **Key risks**: (1-3 sentences on the most important concerns)
 ```
 
+## Finding calibration examples
+
+Use these as guidance for what strong review feedback looks like.
+
+### Good blocker finding
+
+```text
+### [blocker] Non-idempotent retryable write on order creation
+
+**Location**: `orders/service.py` `create_order()`
+**Issue**: The handler retries on timeout but inserts without a uniqueness constraint or idempotency key. A duplicate request can create multiple orders for the same operation.
+**Recommendation**: Require an idempotency key and enforce it in storage (`UNIQUE` or atomic upsert). Keep retries only if the write is safe under replay.
+```
+
+### Good major finding
+
+```text
+### [major] New endpoint has no error-path test coverage
+
+**Location**: `api/routes/users.py`
+**Issue**: The PR adds validation and timeout handling for the external profile lookup, but tests cover only the 200-path. A regression in timeout handling would ship unnoticed.
+**Recommendation**: Add tests for timeout/failure behavior and for the returned error contract so the new branch is protected.
+```
+
+### Good minor finding
+
+```text
+### [minor] Helper name hides persistence semantics
+
+**Location**: `billing/repository.py`
+**Issue**: `save_data()` obscures that the method performs an idempotent upsert by business key. This makes review and future changes harder because the invariant is hidden by the name.
+**Recommendation**: Rename to reflect the contract, e.g. `upsert_invoice_by_external_id()`.
+```
+
+### Good nit
+
+```text
+### [nit] Log field name is inconsistent with nearby handlers
+
+**Location**: `api/orders.py`
+**Issue**: This handler logs `customer` while adjacent handlers log `customer_id`. The behavior is fine, but the inconsistency makes search/debugging slightly harder.
+**Recommendation**: Align the field name if convenient in this PR; do not block merge on this alone.
+```
+
+### Weak finding to avoid
+
+```text
+This code feels wrong. Maybe simplify it and add more logging.
+```
+
+Why it is weak:
+- no concrete risk;
+- no severity;
+- no location precision;
+- no actionable recommendation.
+
 ## Review anti-patterns (avoid)
 
 - **Rubber-stamping**: approving without understanding the change.
 - **Nit-picking without substance**: blocking on style when there are correctness concerns.
 - **Rewriting in review**: suggesting a complete rewrite instead of actionable incremental feedback.
+- **Architecting in review**: demanding speculative abstractions, service splits, or infrastructure that the change does not need.
 - **Scope creep**: demanding unrelated improvements in the same PR.
 - **Assuming tests pass = correct**: tests validate what they test; review validates what they don't.
 - **Ignoring what's NOT in the diff**: callers, consumers, and downstream effects of the change.
@@ -262,12 +335,12 @@ Load references to deepen evaluation accuracy. Do not load all at once — pick 
 ### Production readiness criteria (load for any production-bound review)
 - Read file: `.opencode/skills/python-code-review/references/python-production-readiness-criteria.md`
 
-Concrete red flags, correct pattern characteristics, and severity guidance for passes 5 (Reliability), 6 (Observability), and operational aspects of pass 8.
+Concrete red flags, correct pattern characteristics, and severity guidance for passes 5 (Reliability), 6 (Observability), and operational aspects of pass 8 — including retries/resilience, observability, operational readiness, and container/runtime packaging.
 
 ### Domain-specific review criteria (load when change touches DB, Airflow, APIs, data jobs, or messaging)
 - Read file: `.opencode/skills/python-code-review/references/python-review-domain-criteria.md`
 
-Concrete red flags, correct vs incorrect patterns, and severity guidance for passes 2 (Correctness) and domain-specific aspects of pass 8 — PostgreSQL persistence, API contracts, Airflow DAGs, data jobs/storage, and messaging.
+Concrete red flags, correct vs incorrect patterns, and severity guidance for passes 2 (Correctness) and domain-specific aspects of pass 8 — PostgreSQL persistence, API contracts, Airflow DAGs, data jobs/storage, messaging, concurrency/async code, MPP/analytics paths, and ML engineering.
 
 ## Checklist (final gate)
 
