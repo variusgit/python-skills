@@ -70,6 +70,8 @@ You must surface:
 - **Invariants are first-class**: state them explicitly; enforce them in code + storage; test them.
 - **Idempotency by default** for retryable/replayable operations (API writes, consumers, Airflow tasks, backfills).
 - **Operability is part of done**: actionable logs/metrics, bounded retries/timeouts, safe re-run paths.
+- **Static analysis discipline**: do not add project-wide `pyright` / `basedpyright` ignore rules or disable diagnostics globally. Do not use inline suppressions (`# type: ignore`, `# pyright: ignore[...]`, `# noqa`) without explicit human approval; if approval is granted, suppress only the specific rule and state why.
+- **Logging discipline**: use the root logger only (`logging.info(...)`, `logging.error(...)`). Do not introduce module or named loggers via `logging.getLogger(...)`.
 - **Incremental delivery**: small reversible changes; expand/contract migrations; feature flags when appropriate.
 - **Decisions are transparent**: when a non-obvious choice is made (pattern selection, library choice, architectural boundary, simplification, or hardening decision), briefly explain *why* — name the principle or trade-off that drove it.
 
@@ -91,6 +93,7 @@ You must surface:
 6. **Verify after every change** (non-negotiable)
    - Run `ruff check` and `ruff format --check`; fix all violations before proceeding
    - Run `basedpyright`; resolve all type errors before proceeding
+   - Fix lint/type issues at the source. Do not make verification pass by adding project-wide disables, global ignore rules, or inline suppressions; if a narrowly scoped suppression seems unavoidable, stop and ask for human approval first
    - Run `pytest -q`; all existing tests must pass before proceeding
    - If tests fail, do not author or modify tests. In your output, document what tests need to be created or updated: affected files, changed invariants, and expected behavior
    - Do not move to the next step if any check fails
@@ -116,8 +119,10 @@ When responding, prefer this structure (omit irrelevant sections):
 - **Correctness**: input validated; invariants enforced; idempotent writes where retries are possible; explicit failure modes.
 - **API contract completeness**: for resource-oriented APIs, request/response models, lifecycle completeness or intentional omission, pagination behavior, and `PUT` / `PATCH` / `DELETE` semantics are explicit.
 - **Maintainability**: clear module boundaries; readable naming; typed; no dead code or “magic”.
+- **Static analysis discipline**: no project-wide `pyright` / `basedpyright` disables, and no inline lint/type suppressions without explicit human approval.
 - **Testability**: domain logic is separable and injectable; integration boundaries are explicit.
 - **Observability**: structured logs; actionable errors.
+- **Logging discipline**: logging uses the root logger only; no module or named loggers are introduced.
 - **Security**: secrets/PII protected; safe input handling; external calls are timeout-bounded.
 - **Verified**: `ruff`, `basedpyright`, and `pytest` pass with zero errors after every change.
 
@@ -185,6 +190,8 @@ After reading `python-best-practices.md` load only the most relevant task-specif
 - Unbounded list endpoints or unbounded DB queries in production paths.
 - Backfills without throttling, isolation, and validation.
 - Logging secrets/PII or leaking internal stack traces to clients.
+- Project-wide `pyright` / `basedpyright` disables or inline suppressions (`# type: ignore`, `# pyright: ignore[...]`, `# noqa`) used to hide unresolved issues.
+- Creating module or named loggers with `logging.getLogger(...)` instead of using the root logger.
 - Premature abstraction: generic frameworks, plugin systems, or strategy patterns for code with one concrete use case.
 - Speculative infrastructure: adding caching, message queues, or event sourcing without measured need.
 - Over-engineering configuration: making everything configurable when only one value will ever be used.

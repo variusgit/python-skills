@@ -12,6 +12,8 @@ Clarifications to avoid common contradictions:
 - **DAG files are orchestration glue**: keep them thin; move heavy logic into importable modules to keep parsing fast and enable unit testing.
 - **Dependencies**: follow the repo's established dependency workflow (often requirements/constraints in Airflow stacks). Do not introduce a new package manager unless the project explicitly migrates.
 - **Python version**: DAG code must be compatible with the Airflow runtime’s supported Python version. Avoid language features not supported by that runtime.
+- **Static analysis discipline**: fix lint/type issues in DAG code at the source. Do not rely on project-wide disables or inline suppressions to force validation to pass.
+- **Logging**: use the root logger in DAG/task code (`logging.info(...)`, `logging.error(...)`). Do not create module or named loggers with `logging.getLogger(...)`.
 
 Production-ready patterns for Apache Airflow including DAG design, operators, sensors, and deployment strategies.
 
@@ -124,8 +126,7 @@ def taskflow_etl():
     def notify(rows_loaded: int):
         """Send notification"""
         import logging
-        logger = logging.getLogger(__name__)
-        logger.info("Loaded %s rows", rows_loaded)
+        logging.info("Loaded %s rows", rows_loaded)
 
 
     # Define dependencies with XCom passing
@@ -252,9 +253,8 @@ with DAG(
 
     def process_data(**context):
         import logging
-        logger = logging.getLogger(__name__)
         api_result = context["ti"].xcom_pull(task_ids="wait_for_api")
-        logger.info("API returned: %s", api_result)
+        logging.info("API returned: %s", api_result)
 
 
     process = PythonOperator(
@@ -291,8 +291,7 @@ def task_failure_callback(context):
     """
     # send_slack_alert(message)
     import logging
-    logger = logging.getLogger(__name__)
-    logger.error(message)
+    logging.error(message)
 
 
 def dag_failure_callback(context):
@@ -327,7 +326,7 @@ with DAG(
     def cleanup(**context):
         """Cleanup runs regardless of upstream failures"""
         import logging
-        logging.getLogger(__name__).info("Cleaning up...")
+        logging.info("Cleaning up...")
 
 
     cleanup_task = PythonOperator(
@@ -339,7 +338,7 @@ with DAG(
     def notify_success(**context):
         """Only runs if all upstream succeeded"""
         import logging
-        logging.getLogger(__name__).info("All tasks succeeded!")
+        logging.info("All tasks succeeded!")
 
 
     success_notification = PythonOperator(

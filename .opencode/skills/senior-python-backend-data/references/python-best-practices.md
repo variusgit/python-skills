@@ -372,6 +372,12 @@ Use these names when justifying decisions: "extracting this violates YAGNI — t
 - Configure and use `basedpyright` as the primary static type checker. It provides stricter validation than `pyright` and helps maintain high code quality.
 - Configuration must be defined in `pyproject.toml`.
 
+### Suppression discipline
+- Do not add project-wide `pyright` / `basedpyright` ignore rules or disable diagnostics globally to make checks pass.
+- Do not add inline suppressions (`# type: ignore`, `# pyright: ignore[...]`, `# noqa`) without explicit human approval.
+- If an approved suppression is truly unavoidable, target only the specific rule and leave a brief reason.
+- Prefer fixing the source problem: improve annotations, narrow types, split boundary models, or add small adapters instead of muting the tool.
+
 ## 7. Code Style and Formatting
 - Follow PEP 8.
 - Use Ruff for linting, and use the repo-standard formatter setup (Ruff formatter if enabled, otherwise the project's formatter).
@@ -476,6 +482,9 @@ async def handle_request(data: bytes) -> Result:
 - Never use `print` in production code (default).
 - Use the `logging` module exclusively.
 - Configure logging centrally.
+- Emit logs through the root logger in application code (`logging.info(...)`, `logging.error(...)`).
+- Do not create module or named loggers with `logging.getLogger(...)`.
+- Central logging configuration may still live in dedicated config files/modules; feature code should log through the root logger rather than instantiating separate loggers.
 - Use appropriate log levels:
   - `DEBUG` – internal details,
   - `INFO` – normal operation,
