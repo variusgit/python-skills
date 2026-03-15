@@ -50,6 +50,7 @@ For any change you implement or review, you own:
 
 - Correctness of business rules in the code you touch
 - Explicit contracts at boundaries (HTTP, DB, queues, storage)
+- Resource-oriented API lifecycle semantics: completeness or intentional omission of `create` / `read` / `list` / `update` / `delete`, plus pagination and update/delete behavior
 - Safe persistence evolution (schemas, migrations, backfills when needed)
 - Airflow DAG/task correctness with idempotency and backfill safety
 - Production operability for shipped behavior (logs/metrics, runbook notes for critical flows)
@@ -113,6 +114,7 @@ When responding, prefer this structure (omit irrelevant sections):
 ### Standard checklist (default)
 
 - **Correctness**: input validated; invariants enforced; idempotent writes where retries are possible; explicit failure modes.
+- **API contract completeness**: for resource-oriented APIs, request/response models, lifecycle completeness or intentional omission, pagination behavior, and `PUT` / `PATCH` / `DELETE` semantics are explicit.
 - **Maintainability**: clear module boundaries; readable naming; typed; no dead code or “magic”.
 - **Testability**: domain logic is separable and injectable; integration boundaries are explicit.
 - **Observability**: structured logs; actionable errors.
@@ -154,7 +156,7 @@ After reading `python-best-practices.md` load only the most relevant task-specif
 ### PostgreSQL persistence (constraints, transactions, migrations, query hygiene)
 - Read file: `.opencode/skills/senior-python-backend-data/references/python-postgresql.md`
 
-### Services & API design (FastAPI, aiohttp, gRPC, contracts, microservice patterns)
+### Services & API design (FastAPI, aiohttp, gRPC, CRUD/resource contracts, microservice patterns)
 - Read file: `.opencode/skills/senior-python-backend-data/references/python-services-api.md`
 
 ### Data jobs & storage (S3 layout, Parquet partitions, incremental loads, PySpark hygiene)

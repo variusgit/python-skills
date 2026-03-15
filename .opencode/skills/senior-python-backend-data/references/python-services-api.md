@@ -80,6 +80,16 @@ async def create_user(
     return user
 ```
 
+### Resource-oriented CRUD defaults
+
+For FastAPI resource-oriented services, design the **resource lifecycle**, not isolated handlers:
+
+- Default assumption: `create`, `read one`, `list`, `update`, and `delete` are either implemented or intentionally omitted.
+- Not every resource needs all operations. Missing operations must be explained by business semantics (append-only resource, immutable record, async workflow, internal-only mutation, soft-delete policy).
+- Route handlers own validation, auth, and response shaping; service/domain layer owns business rules and persistence semantics.
+- Use separate models when contracts differ: `UserCreate`, `UserUpdate`, `UserResponse`, `UserListItem`, `UserListResponse`.
+- Prefer one router per resource or bounded resource group.
+
 ### Dependency injection via Depends
 
 ```python
@@ -279,14 +289,32 @@ Follow standard HTTP semantics — the agent already knows CRUD mechanics; these
 - **HTTP methods**: `GET` (read, safe, cacheable), `POST` (create), `PUT`/`PATCH` (full/partial update), `DELETE` (remove).
 - **Status codes**: `200` success, `201` created, `204` no content (delete), `400` bad request, `404` not found, `409` conflict, `422` validation error, `500` internal error.
 - **Consistent response shapes**: single resource returns the object; list endpoint returns `{"items": [...], "next_cursor": ...}`; errors return the error model (see below).
+- **Lifecycle clarity**: if a resource omits list/update/delete, the omission is intentional and documented rather than implicit.
 - Keep endpoints thin — delegate to service/domain layer; the handler validates input, calls business logic, shapes output.
+
+### CRUD contract matrix
+
+| Operation | Typical route | Contract expectations |
+|-----------|---------------|----------------------|
+| **Create** | `POST /resources` | Explicit `201` or `202`; `response_model`; duplicate/idempotency semantics defined; `409` vs `422` policy is clear |
+| **Read one** | `GET /resources/{id}` | Stable identifier semantics; `200` / `404`; no internal fields leaked |
+| **List** | `GET /resources` | Cursor pagination; enforced max page size; stable sort order; filter semantics explicit |
+| **Replace** | `PUT /resources/{id}` | Full replacement only; omitted field behavior explicit; version/conflict semantics defined when needed |
+| **Partial update** | `PATCH /resources/{id}` | Partial mutation rules explicit; immutable fields rejected; validation runs after merge |
+| **Delete** | `DELETE /resources/{id}` | Soft vs hard delete explicit; repeated delete semantics intentional; `204` or `202` chosen deliberately |
+
+If a resource intentionally does not support one of these operations, say so explicitly instead of leaving the lifecycle ambiguous.
 
 ### Request/response contracts
 
 - Validate inputs early; reject invalid data with clear errors.
 - Define stable response models; avoid leaking internal structures.
+- Use separate request and response schemas when create/update/response shapes differ materially.
+- Prefer `response_model` over ad-hoc dict responses so outbound contracts stay stable.
+- Set `status_code` explicitly when non-200 semantics are part of the contract.
 - Use consistent field naming and types; document time zone semantics.
 - Include correlation/request IDs if the platform supports it.
+- For long-lived or shared APIs, use `tags`, `summary`, and `response_description` intentionally so OpenAPI remains useful.
 
 ### Backward compatibility (default)
 
@@ -319,6 +347,24 @@ For endpoints that create/charge/trigger:
 - Prefer cursor-based pagination for large datasets.
 - Enforce maximum page size.
 - Avoid unbounded list endpoints in production paths.
+
+### Update and delete semantics
+
+- Use `PUT` only for full replacement semantics; use `PATCH` for partial mutation. Do not blur them.
+- If concurrent updates matter, choose optimistic locking/version checks or intentionally accept last-write-wins.
+- Soft delete vs hard delete must be explicit in the contract and downstream behavior.
+- Repeated update/delete semantics should be intentional under retries and race conditions.
+
+### FastAPI CRUD anti-patterns
+
+- Create-only endpoint sets presented as CRUD without explaining why other lifecycle operations are absent.
+- List endpoints without pagination, stable ordering, or max page size.
+- Reusing the same schema for create, update, and response when the contracts differ materially.
+- Returning raw ORM objects or internal dicts directly from handlers.
+- Business logic, transaction flow, or persistence branching embedded in route handlers.
+- `PUT` and `PATCH` used interchangeably.
+- Delete behavior ambiguous (soft vs hard, repeated delete semantics undefined).
+- Retryable create/update operations without idempotency or explicit conflict policy.
 
 ### Timeouts and retries
 
@@ -442,12 +488,14 @@ async def get_order(order_id: str):
 
 - Framework chosen with clear rationale (FastAPI / aiohttp / gRPC).
 - API contracts are explicit (input/output/error models).
+- For resource-oriented APIs, lifecycle completeness or intentional omission is explicit.
 - Handlers are thin; business logic is separated from HTTP layer.
 - Healthcheck endpoint is implemented (`/health/live`).
 
 ### When the service has persistence or external integrations
 
 - Write paths are idempotent where retries are possible.
+- List endpoints are paginated and bounded; update/delete semantics are explicit where relevant.
 - Inter-service calls have timeouts and retries.
 - Contracts are backward compatible; breaking changes are versioned.
 
@@ -463,10 +511,14 @@ async def get_order(order_id: str):
 ## Failure modes
 
 - Breaking contract changes without explicit versioning.
+- Create-only pseudo-CRUD with no lifecycle rationale, leading to accidental or incomplete API contracts.
 - Retry-unsafe writes creating duplicate side effects.
 - Leaking internal exception details or stack traces to clients.
 - Unbounded list endpoints causing latency and resource spikes.
+- `PUT` / `PATCH` semantics blurred, causing inconsistent updates and client misuse.
 - Inconsistent error shapes that break clients and observability.
+- Returning ORM/internal models directly, causing contract drift or leaked fields.
+- Delete behavior ambiguous (soft vs hard, repeated delete semantics undefined).
 - Missing healthchecks causing traffic to unhealthy instances.
 - No graceful shutdown — connections dropped, data lost on deploy.
 - Cascading failures from missing timeouts/circuit breakers on inter-service calls.
