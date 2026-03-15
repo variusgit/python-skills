@@ -276,8 +276,8 @@ Test names should describe behavior:
 ## CI quality gates
 
 Always run:
-- `ruff` (lint + format)
 - `basedpyright` (or configured type checker)
+- `ruff` (lint + format)
 - `pytest -q` for unit tests
 
 Additionally (depending on repo):

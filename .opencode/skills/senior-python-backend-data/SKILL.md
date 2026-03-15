@@ -91,8 +91,8 @@ You must surface:
    - for inherited code, prefer incremental refactoring over architectural replacement; capture current behavior first, then improve one boundary or risk theme at a time
 5. Implement with the “Definition of done” checklist below
 6. **Verify after every change** (non-negotiable)
-   - Run `ruff check` and `ruff format --check`; fix all violations before proceeding
    - Run `basedpyright`; resolve all type errors before proceeding
+   - Run `ruff check` and `ruff format --check`; fix all violations before proceeding
    - Fix lint/type issues at the source. Do not make verification pass by adding project-wide disables, global ignore rules, or inline suppressions; if a narrowly scoped suppression seems unavoidable, stop and ask for human approval first
    - Run `pytest -q`; all existing tests must pass before proceeding
    - If tests fail, do not author or modify tests. In your output, document what tests need to be created or updated: affected files, changed invariants, and expected behavior

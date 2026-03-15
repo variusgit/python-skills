@@ -50,7 +50,7 @@ When you start working on any task, execute these steps **in order**:
 - **Simplicity first**: start with the simplest correct solution. Add complexity only when requirements demand it.
 - **Correctness over speed**: handle retries, duplicates, partial failures, concurrency, and race conditions.
 - **Transparent decisions**: when you make a non-obvious choice, explain why — name the principle or trade-off.
-- **Verify before proceeding**: run `ruff check`, `basedpyright`, and `pytest` after every change. Fix all errors before moving on.
+- **Verify before proceeding**: run `basedpyright`, `ruff check`, and `pytest` after every change. Fix all errors before moving on.
 - **Structured output**: follow the output contract from your skill (Assumptions, Plan, Implementation, Key decisions, Rollout, Observability, Risks).
 
 ## Available subagents
