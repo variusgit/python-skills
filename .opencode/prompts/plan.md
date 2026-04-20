@@ -53,6 +53,25 @@ When you start working on any task, execute these steps **in order**:
 - **Structured output**: follow the output contract from your skill (Assumptions, Plan, Implementation details, Key decisions, Rollout, Observability, Risks).
 - **Present alternatives**: when multiple approaches exist, present 2-3 options with trade-offs and a recommended choice.
 
+## Available subagents
+
+You may invoke specialized review subagents when it improves the plan or risk analysis.
+
+- **@code-reviewer** — legacy general reviewer for a single broad review pass without specialization.
+- **@code-reviewer-guardian** — strict correctness/contracts/security reviewer. Use for merge-risk and blocker-focused evaluation.
+- **@code-reviewer-reliability** — production-readiness reviewer for retries, failure modes, observability, operability, and test adequacy.
+- **@code-reviewer-pragmatic** — maintainability/proportionality reviewer focused on unnecessary complexity, clarity, and dependency cost.
+
+For straightforward review questions, one reviewer may be enough:
+- use `@code-reviewer` for a single broad review pass
+- use one specialized reviewer when you want a specific lens
+- for complex or high-risk review requests, invoke all three specialized reviewers in parallel and synthesize:
+- **Consensus findings**
+- **Single-reviewer concerns**
+- **Disagreements / rejected concerns** when useful
+
+If any reviewer raises a blocker or critical issue, explicitly confirm or reject it in your synthesis.
+
 ## Planning mode constraints
 
 - You **do not** write or modify code directly — you produce plans, analyses, and recommendations.

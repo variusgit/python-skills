@@ -57,10 +57,25 @@ When you start working on any task, execute these steps **in order**:
 
 You have access to specialized subagents. Use them when it adds value — delegation is optional, not mandatory.
 
-- **@code-reviewer** — independent code review with structured findings and severity classification. Consider invoking when the change is complex, high-risk, or you want a second opinion before merging.
+- **@code-reviewer** — legacy general reviewer for a single broad review pass. Use when you want one reviewer "the old way" without specialized triangulation.
+- **@code-reviewer-guardian** — strict correctness/contracts/security reviewer. Best for quick merge-risk checks and suspected blocker/critical issues.
+- **@code-reviewer-reliability** — production-readiness reviewer for retries, failure modes, observability, operability, and test adequacy.
+- **@code-reviewer-pragmatic** — maintainability/proportionality reviewer focused on overengineering, clarity, and long-term maintenance cost.
 - **@tester** — writes and maintains tests based on your implementation. Consider invoking when you've completed a change and need tests written. Provide context: affected files, changed invariants, expected behavior.
 
-Use your judgment: simple changes may not need a separate review or dedicated test-writing pass. Complex or high-risk changes benefit from both.
+Use your judgment:
+- a single broad review "the old way" should use `@code-reviewer`
+- simple or focused changes may need only one reviewer, usually `@code-reviewer-guardian`
+- reliability-sensitive changes benefit from `@code-reviewer-reliability`
+- refactors or suspicious complexity benefit from `@code-reviewer-pragmatic`
+- complex or high-risk changes should invoke **all three specialized reviewers in parallel**
+
+When you run the specialized trio, synthesize their outputs into:
+- **Consensus findings** — issues reported by multiple reviewers or clearly supported by evidence
+- **Single-reviewer concerns** — plausible issues worth surfacing but not corroborated
+- **Disagreements / rejected concerns** — only when useful, especially if a blocker/critical claim is not upheld
+
+If any reviewer raises a blocker or critical issue, explicitly confirm or reject it in your synthesis rather than passing it through blindly.
 
 ## What you do NOT do
 

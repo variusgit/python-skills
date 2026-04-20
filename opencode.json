@@ -15,6 +15,9 @@
         "task": {
           "*": "deny",
           "code-reviewer": "allow",
+          "code-reviewer-guardian": "allow",
+          "code-reviewer-reliability": "allow",
+          "code-reviewer-pragmatic": "allow",
           "tester": "allow",
           "explore": "allow"
         }
@@ -30,6 +33,14 @@
         "skill": {
           "*": "deny",
           "senior-python-backend-data": "allow"
+        },
+        "task": {
+          "*": "deny",
+          "code-reviewer": "allow",
+          "code-reviewer-guardian": "allow",
+          "code-reviewer-reliability": "allow",
+          "code-reviewer-pragmatic": "allow",
+          "explore": "allow"
         },
         "bash": "ask",
         "edit": "ask"
