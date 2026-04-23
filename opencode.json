@@ -12,6 +12,7 @@
           "*": "deny",
           "senior-python-backend-data": "allow"
         },
+        "external_directory": "deny",
         "task": {
           "*": "deny",
           "code-reviewer": "allow",
@@ -34,6 +35,7 @@
           "*": "deny",
           "senior-python-backend-data": "allow"
         },
+        "external_directory": "deny",
         "task": {
           "*": "deny",
           "code-reviewer": "allow",

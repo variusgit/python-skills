@@ -11,6 +11,7 @@ permission:
   skill:
     "*": deny
     "python-code-review": allow
+  external_directory: deny
   bash:
     "*": deny
     "git diff*": allow

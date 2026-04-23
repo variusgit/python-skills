@@ -7,6 +7,7 @@ permission:
   skill:
     "*": deny
     "python-testing": allow
+  external_directory: deny
   bash:
     "*": deny
     "pytest*": allow
