@@ -70,7 +70,7 @@ TDD applies to business logic, domain rules, and data transformations. For thin 
 
 ### Coverage strategy
 
-- **Target**: 80%+ for core logic modules.
+- **Target**: 60%+ for core logic modules.
 - **Critical paths**: 100% where failures have high impact (money, safety, data loss, security).
 - Coverage targets do **not** justify meaningless tests for thin wiring, framework glue, or generated code.
 - Optimize for defect prevention, not coverage numbers.

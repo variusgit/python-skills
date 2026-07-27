@@ -4,10 +4,10 @@ mode: subagent
 model: anthropic/claude-sonnet-4-20250514
 color: "#9C27B0"
 permission:
+  external_directory: deny
   skill:
     "*": deny
     "python-testing": allow
-  external_directory: deny
   bash:
     "*": deny
     "pytest*": allow
