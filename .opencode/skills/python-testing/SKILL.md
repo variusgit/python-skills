@@ -10,11 +10,11 @@ This is a **task skill** for a dedicated testing agent: it defines *how to decid
 
 ## When to use
 
-- Writing new Python code (follow TDD for non-trivial logic).
+- Supporting new or changed Python behavior by defining tests before or after production implementation.
 - Adding or changing API, DB, Airflow, pipeline, messaging, or service lifecycle contracts.
 - Reviewing or stabilizing existing test suites (flaky, slow, brittle).
 - Designing test strategy for a new module or service.
-- Defining or updating CI quality gates.
+- Reviewing CI quality gates and reporting required test-configuration or pipeline changes for implementation outside this agent.
 
 Do not use this skill for front-end-only testing or non-Python test frameworks.
 
@@ -29,27 +29,30 @@ Do not use this skill for front-end-only testing or non-Python test frameworks.
 3. **Apply determinism rules** (non-negotiable).
 4. **Write tests** using the appropriate pytest patterns from this skill or domain reference.
 5. **Validate** — run lint + type-check + pytest; confirm determinism and isolation.
-6. **Close the loop** — update checklist, flag any uncovered invariants or risks.
+6. **Report required out-of-scope changes**
+   - If passing tests requires production-code changes, report the failing behavior, affected contract or invariant, and the minimal expected production change. Do not implement it.
+   - If validation requires changes outside permitted test files (for example `pyproject.toml` or CI configuration), report the exact required configuration change without modifying it.
+7. **Close the loop** — update checklist, flag any uncovered invariants or risks.
 
 ## Testing philosophy
 
 ### TDD cycle (default for non-trivial logic)
 
-1. **RED**: Write a failing test that describes the desired behavior.
-2. **GREEN**: Write minimal code to make the test pass.
-3. **REFACTOR**: Improve code while keeping tests green.
+1. **RED**: Write a failing test that describes the desired behavior or invariant.
+2. **GREEN handoff**: Report the minimal expected production behavior or change required to make the test pass. Do not modify production code.
+3. **VERIFY**: After the production implementation is provided, rerun the relevant tests and confirm that the behavior passes without regressions.
+4. **TEST REFACTOR**: Improve test structure, fixtures, and readability while preserving tested behavior. Report any production refactoring need separately.
 
 ```python
 # RED — test describes behavior before implementation exists
 def test_calculate_discount_applies_tier_rate():
     result = calculate_discount(order_total=500, tier="gold")
     assert result == 50.0
-
-# GREEN — minimal implementation
-def calculate_discount(order_total: float, tier: str) -> float:
-    rates = {"gold": 0.10, "silver": 0.05}
-    return order_total * rates.get(tier, 0.0)
 ```
+
+Expected production behavior:
+- `calculate_discount(500, "gold")` returns `50.0`.
+- Production implementation is outside this agent's scope.
 
 TDD applies to business logic, domain rules, and data transformations. For thin orchestration/wiring (e.g., Airflow DAG definitions), prefer structural and integration tests instead.
 
@@ -324,7 +327,7 @@ Load when writing or reviewing tests and you need specific pytest recipes (advan
 
 ### Do
 
-- Follow TDD for non-trivial logic (red → green → refactor).
+- Follow the test-only TDD workflow for non-trivial logic: write RED tests, report required production behavior, verify the resulting implementation, and refactor test code only.
 - Test one behavior per test function.
 - Prefer tests that assert invariants, state transitions, contracts, and externally visible side effects.
 - Start by identifying the contract or invariant that matters most; let that drive the assertion style.
