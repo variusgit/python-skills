@@ -1,0 +1,100 @@
+{
+  "$schema": "https://opencode-api-provider.ailab-copilot-prod.corp.tander.ru/config.json",
+  "autoupdate": false,
+  "enabled_providers": ["openrouter"],
+  "provider": {
+    "openrouter": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "openrouter",
+      "options": {
+        "baseURL": "https://openrouter.ai/api/v1",
+        "apiKey": "sk-enterhere"
+      },
+      "models": {
+        "deepseek-v4-pro": {
+          "name": "deepseek/deepseek-v4-pro",
+          "limit": {
+            "context": 1000000,
+            "output": 8192
+          }
+        },
+        "gpt-5.6-sol": {
+          "name": "openai/gpt-5.6-sol",
+          "limit": {
+            "context": 1000000,
+            "output": 8192
+          }
+        },
+        "glm-5.3": {
+          "name": "z-ai/glm-5.3",
+          "limit": {
+            "context": 1000000,
+            "output": 8192
+          }
+        },
+        "gpt-5.6-terra": {
+          "name": "openai/gpt-5.6-terra",
+          "limit": {
+            "context": 1000000,
+            "output": 8192
+          }
+        },
+        "qwen3.8-max-0902": {
+          "name": "qwen/qwen3.8-max-0902",
+          "limit": {
+            "context": 1000000,
+            "output": 8192
+          }
+        }
+      }
+    }
+  },
+  "agent": {
+    "build": {
+      "mode": "primary",
+      "model": "glm-5.3",
+      "color": "#4CAF50",
+      "prompt": "{file:.opencode/prompts/build.md}",
+      "permission": {
+        "external_directory": "deny",
+        "skill": {
+          "*": "deny",
+          "senior-python-backend-data": "allow"
+        },
+        "task": {
+          "*": "deny",
+          "code-reviewer": "allow",
+          "code-reviewer-guardian": "allow",
+          "code-reviewer-reliability": "allow",
+          "code-reviewer-pragmatic": "allow",
+          "tester": "allow",
+          "explore": "allow"        }
+      }
+    },
+
+    "plan": {
+      "mode": "primary",
+      "model": "qwen3.8-max-0902",
+      "color": "#2196F3",
+      "prompt": "{file:.opencode/prompts/plan.md}",
+      "permission": {
+        "external_directory": "deny",
+        "skill": {
+          "*": "deny",
+          "senior-python-backend-data": "allow"
+        },
+        "task": {
+          "*": "deny",
+          "code-reviewer": "allow",
+          "code-reviewer-guardian": "allow",
+          "code-reviewer-reliability": "allow",
+          "code-reviewer-pragmatic": "allow",
+          "explore": "allow"
+        },
+        "bash": "ask",
+        "edit": "ask"
+      }
+    }
+  },
+  "mcp": {}  
+}
